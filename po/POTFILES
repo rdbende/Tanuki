@@ -1,0 +1,6 @@
+data/io.github.rdbende.Tanuki.desktop.in
+data/io.github.rdbende.Tanuki.metainfo.xml.in
+data/io.github.rdbende.Tanuki.gschema.xml
+src/main.py
+src/window.py
+src/window.ui
