@@ -161,3 +161,4 @@ cython_debug/
 
 # Flatpak Builder
 .flatpak-builder/
+flatpak-pip-generator

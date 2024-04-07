@@ -1,0 +1,136 @@
+using Gtk 4.0;
+using Adw 1;
+
+
+template $LoginDialog : Adw.Dialog {
+  content-width: 400;
+  content-height: 450;
+  can-close: false;
+
+  child: Adw.ToastOverlay toaster {
+    Adw.NavigationView navigation_view {
+      Adw.NavigationPage {
+        title: "Tanuki";
+        tag: "welcome";
+        Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar { show-title: false; }
+
+          content: Adw.StatusPage {
+            icon-name: "io.github.rdbende.Tanuki";
+            title: _("Welcome to Tanuki");
+
+            Button start_button {
+              label: _("Log In");
+              halign: center;
+              action-name: "navigation.push";
+              action-target: "'instance'";
+              styles ["suggested-action", "pill"]
+            }
+          };
+        }
+      }
+
+      Adw.NavigationPage {
+        title: _("Select Instance");
+        tag: "instance";
+        Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar { show-title: false; }
+
+          content: Adw.StatusPage {
+            title: _("GitLab Instance");
+            description: _("Enter the URL of your GitLab instance");
+
+            Box {
+              orientation: vertical;
+              Adw.Clamp {
+                maximum-size: 300;
+                ListBox {
+                  margin-bottom: 36;
+                  styles ["boxed-list"]
+
+                  Adw.EntryRow instance_entry {
+                    title: _("Instance URL");
+                    text: "https://gitlab.com";
+                    can-focus: true;
+                    entry-activated => $go_to_login_page();
+                  }
+                }
+              }
+
+              Button instance_select_button {
+                label: _("Next");
+                halign: center;
+                clicked => $go_to_login_page();
+                styles ["suggested-action", "pill"]
+              }
+            }
+          };
+        }
+      }
+
+      Adw.NavigationPage {
+        title: _("Log In");
+        tag: "login";
+        Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar { show-title: false; }
+
+          content: Adw.StatusPage {
+            title: _("Log In");
+            description: _("Enter your GitLab token to start using Tanuki");
+
+            Box {
+              orientation: vertical;
+              Adw.Clamp {
+                maximum-size: 300;
+                ListBox {
+                  margin-bottom: 36;
+                  styles ["boxed-list"]
+
+                  Adw.EntryRow token_entry {
+                    title: _("Token");
+                    can-focus: true;
+                    entry-activated => $on_login_clicked();
+                  }
+                }
+              }
+
+              $SpinnerButton login_button {
+                label: _("Next");
+                halign: center;
+                clicked => $on_login_clicked();
+                styles ["suggested-action", "pill"]
+              }
+            }
+          };
+        }
+      }
+
+      Adw.NavigationPage {
+        title: _("Finished");
+        tag: "finished";
+        can-pop: false;
+
+        Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar { show-title: false; }
+
+          content: Adw.StatusPage {
+            icon-name: "check-round-outline-symbolic";
+            title: _("Login Complete");
+            description: _("You're all set. Let's start building software!");
+
+            Button finish_button {
+              label: _("Start Developing");
+              halign: center;
+              clicked => $on_complete_clicked();
+              styles ["suggested-action", "pill"]
+            }
+          };
+        }
+      }
+    }
+  };
+}

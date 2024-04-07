@@ -5,14 +5,13 @@
 
 import sys
 
-import gi
-
-gi.require_version("Gtk", "4.0")
-gi.require_version("Adw", "1")
-
 from gi.repository import Adw, Gio
 
-from .window import TanukiWindow
+app = None
+
+
+def get_application() -> Adw.Application | None:
+    return app
 
 
 class TanukiApplication(Adw.Application):
@@ -23,7 +22,7 @@ class TanukiApplication(Adw.Application):
             application_id="io.github.rdbende.Tanuki", flags=Gio.ApplicationFlags.DEFAULT_FLAGS
         )
         self.create_action("quit", lambda *_: self.quit(), ["<primary>q"])
-        self.create_action("about", self.on_about_action)
+        self.create_action("about", self.on_about_action, ["F1"])
 
     def do_activate(self):
         """Called when the application is activated.
@@ -32,14 +31,17 @@ class TanukiApplication(Adw.Application):
         necessary.
         """
         win = self.props.active_window
+
         if not win:
+            from .window import TanukiWindow
+
             win = TanukiWindow(application=self)
+
         win.present()
 
     def on_about_action(self, widget, _):
         """Callback for the app.about action."""
-        about = Adw.AboutWindow(
-            transient_for=self.props.active_window,
+        about = Adw.AboutDialog(
             application_name="Tanuki",
             application_icon="io.github.rdbende.Tanuki",
             developer_name="Benedek Dévényi",
@@ -47,7 +49,7 @@ class TanukiApplication(Adw.Application):
             developers=["Benedek Dévényi"],
             copyright="© 2024 Benedek Dévényi",
         )
-        about.present()
+        about.present(self.props.active_window)
 
     def create_action(self, name, callback, shortcuts=None):
         """Add an application action.
@@ -67,5 +69,6 @@ class TanukiApplication(Adw.Application):
 
 def main(version):
     """The application's entry point."""
+    global app
     app = TanukiApplication()
     return app.run(sys.argv)
