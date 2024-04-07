@@ -24,7 +24,6 @@ import sys
 import signal
 import locale
 import gettext
-import pathlib
 
 
 VERSION = '@VERSION@'
@@ -43,10 +42,6 @@ if __name__ == '__main__':
     from gi.repository import Gio
     resource = Gio.Resource.load(os.path.join(pkgdatadir, 'tanuki.gresource'))
     resource._register()
-
-    print(list(pathlib.Path("/app/share/tanuki").iterdir()))
-    print(pkgdatadir)
-
 
     from tanuki import main
     sys.exit(main.main(VERSION))

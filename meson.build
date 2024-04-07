@@ -13,13 +13,14 @@ py_installation = python.find_installation('python3')
 python_dir = get_option('prefix') / py_installation.get_install_dir()
 pkgdatadir = get_option('prefix') / get_option('datadir') / meson.project_name()
 localedir = get_option('prefix') / get_option('localedir')
-bindir = get_option('bindir')
+bindir = get_option('prefix') / get_option('bindir')
 moduledir = python_dir / 'tanuki'
+
 
 conf = configuration_data()
 conf.set('PYTHON', py_installation.full_path())
 conf.set('VERSION', meson.project_version())
-conf.set('localedir', get_option('prefix') / get_option('localedir'))
+conf.set('localedir', localedir)
 conf.set('pkgdatadir', pkgdatadir)
 
 
