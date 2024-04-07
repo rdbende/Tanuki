@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="tanuki">
 	<schema id="io.github.rdbende.Tanuki" path="/io/github/rdbende/Tanuki/">
+	  <key type="s" name="user-token">
+	    <summary>Encrypted private token of user</summary>
+	  </key>
 	</schema>
 </schemalist>

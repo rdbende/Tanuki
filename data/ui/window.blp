@@ -17,23 +17,16 @@ template $TanukiWindow: Adw.ApplicationWindow {
       }
     }
 
-    content: Label label {
-      label: 'Hello, World!';
-
-      styles [
-        "title-1",
-      ]
+    content: $SpinnerButton login_button {
+      label: 'Login';
+      icon-name: 'person2-symbolic';
+      valign: center;
     };
   };
 }
 
 menu primary_menu {
   section {
-    item {
-      label: _('_Preferences');
-      action: 'app.preferences';
-    }
-
     item {
       label: _('_Keyboard Shortcuts');
       action: 'win.show-help-overlay';
