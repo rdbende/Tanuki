@@ -30,18 +30,14 @@ class LoginDialog(Adw.Dialog):
 
         self.connect("close-attempt", self.on_close_attempt)
 
-        self.instance_entry.connect(
-            "changed",
-            lambda *_: self.instance_select_button.set_sensitive(self.instance_entry.get_text()),
-        )
-        self.token_entry.connect(
-            "changed", lambda *_: self.login_button.set_sensitive(self.token_entry.get_text())
-        )
-
     def on_close_attempt(self, *_):
         app = get_application()
         if app is not None:
             app.quit()
+
+    @Gtk.Template.Callback()
+    def string_is_not_empty(self, _, string) -> bool:
+        return bool(string)
 
     @Gtk.Template.Callback()
     def on_complete_clicked(self, *_):
