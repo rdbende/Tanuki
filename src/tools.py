@@ -6,7 +6,9 @@
 from threading import Thread
 from typing import Callable
 
-from gi.repository import Gio
+from gi.repository import Gio, Gdk, GLib
+
+import requests
 
 
 def threaded(func: Callable):
@@ -20,3 +22,17 @@ def threaded(func: Callable):
 
 def run_in_thread(func: Callable, *args, **kwargs):
     Gio.Task().run_in_thread(lambda *_: func(*args, **kwargs))
+
+
+class RemoteImages:
+    _downloaded_images = {}
+
+    @classmethod
+    def download(cls, image_url: str) -> None:
+        if image_url in cls._downloaded_images:
+            return cls._downloaded_images[image_url]
+
+        content = requests.get(image_url).content
+        image = Gdk.Texture.new_from_bytes(GLib.Bytes(content))
+        cls._downloaded_images[image_url] = image
+        return image

@@ -42,3 +42,7 @@
   padding: 0px;
 }
 
+
+.status-page-circular-image .icon {
+  border-radius: 100%;
+}

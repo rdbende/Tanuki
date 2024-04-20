@@ -9,21 +9,8 @@ from tanuki.backend import SessionManager, session
 from tanuki.dialogs.login import LoginDialog
 from tanuki.main import get_application
 from tanuki.settings import settings
-from tanuki.tools import run_in_thread
+from tanuki.tools import run_in_thread, RemoteImages
 
-
-class RemoteImages:
-    _downloaded_images = {}
-
-    @classmethod
-    def download(cls, image_url: str) -> None:
-        if image_url in cls._downloaded_images:
-            return cls._downloaded_images[image_url]
-
-        content = requests.get(image_url).content
-        image = Gdk.Texture.new_from_bytes(GLib.Bytes(content))
-        cls._downloaded_images[image_url] = image
-        return image
 
 
 class AvatarButton(Gtk.Button):

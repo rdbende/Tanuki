@@ -71,7 +71,7 @@ template $LoginDialog : Adw.Dialog {
         }
       }
 
-      Adw.NavigationPage {
+      Adw.NavigationPage login_page {
         title: _("Log In");
         tag: "login";
         Adw.ToolbarView {
@@ -119,13 +119,12 @@ template $LoginDialog : Adw.Dialog {
           [top]
           Adw.HeaderBar { show-title: false; }
 
-          content: Adw.StatusPage {
-            icon-name: "check-round-outline-symbolic";
-            title: _("Login Complete");
+          content: Adw.StatusPage all_set_page {
             description: _("You're all set. Let's start building software!");
+            styles ["status-page-circular-image"]
 
             Button finish_button {
-              label: _("Start Developing");
+              label: _("Finish");
               halign: center;
               clicked => $on_complete_clicked();
               styles ["suggested-action", "pill"]
