@@ -22,10 +22,8 @@ class SpinnerButton(Gtk.Button):
 
     def start(self):
         self.set_sensitive(False)
-        self.spinner.set_spinning(True)
         self.stack.set_visible_child(self.spinner)
 
     def stop(self):
         self.set_sensitive(True)
-        self.spinner.set_spinning(False)
         self.stack.set_visible_child(self.content)

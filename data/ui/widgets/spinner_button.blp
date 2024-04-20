@@ -10,7 +10,7 @@ template $SpinnerButton: Button {
       label: bind template.label;
     }
 
-    Spinner spinner {}
+    Spinner spinner { spinning: bind template.sensitive inverted; }
   }
 
   styles [
