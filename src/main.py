@@ -35,9 +35,9 @@ class TanukiApplication(Adw.Application):
         win = self.props.active_window
 
         if not win:
-            from .window import TanukiWindow
+            from .window import MainWindow
 
-            win = TanukiWindow(application=self)
+            win = MainWindow(application=self)
 
         win.present()
 

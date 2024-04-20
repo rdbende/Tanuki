@@ -3,9 +3,10 @@ message('Compiling blueprints')
 
 blueprints = custom_target('blueprints',
   input: files(
-    'login_dialog.blp',
+    'dialogs/login.blp',
     'shortcuts.blp',
     'widgets/spinner_button.blp',
+    'views/sidebar/view.blp',
     'window.blp',
   ),
   output: '.',

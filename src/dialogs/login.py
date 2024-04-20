@@ -9,7 +9,7 @@ from tanuki.main import get_application
 from tanuki.widgets import SpinnerButton
 
 
-@Gtk.Template(resource_path="/io/github/rdbende/Tanuki/login_dialog.ui")
+@Gtk.Template(resource_path="/io/github/rdbende/Tanuki/dialogs/login.ui")
 class LoginDialog(Adw.Dialog):
     __gtype_name__ = "LoginDialog"
 

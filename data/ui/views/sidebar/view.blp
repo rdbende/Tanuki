@@ -1,0 +1,23 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $Sidebar: Adw.Bin {
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar header_bar {
+      [title]
+      Adw.WindowTitle {
+        title: "Tanuki";
+    }
+
+    [end]
+      MenuButton {
+        primary: true;
+        icon-name: 'open-menu-symbolic';
+        tooltip-text: _('Main Menu');
+        menu-model: bind template.menu-model;
+      }
+    }
+    content: Adw.StatusPage {title: "Sidebar";};
+  }
+}
