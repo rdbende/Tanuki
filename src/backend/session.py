@@ -2,9 +2,15 @@ import hashlib
 import json
 
 import gitlab
-from gi.repository import GObject
+from gi.repository import Gio, GObject, Secret
 from tanuki import settings
 from tanuki.tools import run_in_thread, threaded
+
+schema = Secret.Schema.new(
+    "io.github.rdbende.Tanuki",
+    Secret.SchemaFlags.NONE,
+    {"session-id": Secret.SchemaAttributeType.STRING},
+)
 
 
 class SessionManager:
@@ -23,10 +29,25 @@ class SessionManager:
         return json.loads(serialized_sessions)
 
     @classmethod
+    def save_secret(cls, session_id: str, description: str, secret: str) -> None:
+        Secret.password_store(
+            schema,
+            {"session-id": session_id},
+            Secret.COLLECTION_DEFAULT,
+            description,
+            secret,
+            None,
+            lambda _, task: Secret.password_store_finish(task),
+        )
+
+    @classmethod
     def save_session(cls, gitlab) -> None:
         sessions = cls.get_sessions()
-        sessions[cls.get_session_id(gitlab)] = {
-            "token": gitlab.private_token,
+        session_id = cls.get_session_id(gitlab)
+
+        cls.save_secret(session_id, f"{gitlab.user.username} at {gitlab.url}", gitlab.private_token)
+
+        sessions[session_id] = {
             "username": gitlab.user.username,
             "name": gitlab.user.name,
             "url": gitlab.url,
@@ -52,6 +73,7 @@ class SessionManager:
 
 
 class Tanuki(GObject.Object):
+    # Signals
     @GObject.Signal
     def login_completed(self): ...
 
@@ -68,14 +90,20 @@ class Tanuki(GObject.Object):
         else:
             self.emit("login-failed")
 
-    def login(self, **kwargs):
+    def login(self, **kwargs) -> None:
         self.gl = gitlab.Gitlab(**kwargs)
         run_in_thread(self._authenticate)
 
-    def start_session(self, session_id: str):
+    def start_session(self, session_id: str) -> None:
         data = SessionManager.get_session_from_id(session_id)
-        self.gl = gitlab.Gitlab(url=data["url"], private_token=data["token"])
-        run_in_thread(self._authenticate)
+
+        def finish(_, task: Gio.Task) -> None:
+            self.gl = gitlab.Gitlab(
+                url=data["url"], private_token=Secret.password_lookup_finish(task)
+            )
+            run_in_thread(self._authenticate)
+
+        Secret.password_lookup(schema, {"session-id": session_id}, None, finish)
 
     @threaded
     def print_user(self, *_):

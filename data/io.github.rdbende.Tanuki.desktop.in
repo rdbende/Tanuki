@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=tanuki
-Exec=tanuki
+Exec=io.github.rdbende.Tanuki
 Icon=io.github.rdbende.Tanuki
 Terminal=false
 Type=Application
