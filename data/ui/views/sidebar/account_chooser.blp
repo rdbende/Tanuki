@@ -1,0 +1,39 @@
+using Gtk 4.0;
+using Adw 1;
+
+
+template $AccountChooser : MenuButton {
+  popover: account_popover;
+  styles ["flat", "circular"]
+
+  $AvatarButton avatar {
+    size: 24;
+  }
+}
+
+Popover account_popover {
+  styles ["account-switcher"]
+
+  Box {
+    orientation: vertical;
+    spacing: 4;
+
+    ListBox accounts {
+      activate-on-single-click: true;
+      styles["navigation-sidebar"]
+    }
+
+    Separator {}
+
+    Button {
+      clicked => $on_add_new_account_clicked();
+      child: Adw.ButtonContent {
+        icon-name: "list-add-symbolic";
+        use-underline: true;
+        label: _("_Add Account");
+      };
+
+      styles ["flat"]
+    }
+  }
+}

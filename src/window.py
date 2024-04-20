@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from gi.repository import Adw, Gio, Gtk
+from tanuki import settings
+from tanuki.backend import session
 from tanuki.dialogs.login import LoginDialog
 from tanuki.views.sidebar import Sidebar
 
@@ -20,12 +22,11 @@ class MainWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        logged_in = False
-
-        if not logged_in:
+        current_session = settings.get_string("current-session")
+        if not current_session:
             LoginDialog().present(self)
-
-        self.settings = Gio.Settings("io.github.rdbende.Tanuki")
+        else:
+            session.start_session(current_session)
 
         self.setup_components()
 

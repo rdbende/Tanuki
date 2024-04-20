@@ -3,6 +3,7 @@
 # SPDX-FileCopyrightText: 2024  Benedek Dévényi
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+
 from gi.repository import Adw, Gtk
 from tanuki.backend import session
 from tanuki.main import get_application
@@ -25,8 +26,8 @@ class LoginDialog(Adw.Dialog):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        session.connect("login-completed", self.login_completed)
-        session.connect("login-failed", self.login_falied)
+        self.a = session.connect("login-completed", self.login_completed)
+        self.b = session.connect("login-failed", self.login_falied)
 
         self.connect("close-attempt", self.on_close_attempt)
 
@@ -35,6 +36,12 @@ class LoginDialog(Adw.Dialog):
         app = get_application()
         if app is not None and not session.logged_in:
             app.quit()
+
+        # FIXME: WHY????
+        del self.navigation_view
+
+        session.disconnect(self.a)
+        session.disconnect(self.b)
 
     @Gtk.Template.Callback()
     def string_is_not_empty(self, _, string) -> bool:

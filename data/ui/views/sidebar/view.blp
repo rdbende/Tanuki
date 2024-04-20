@@ -5,12 +5,15 @@ template $Sidebar: Adw.Bin {
   Adw.ToolbarView {
     [top]
     Adw.HeaderBar header_bar {
+      [start]
+      $AccountChooser {}
+
       [title]
       Adw.WindowTitle {
         title: "Tanuki";
-    }
+      }
 
-    [end]
+      [end]
       MenuButton {
         primary: true;
         icon-name: 'open-menu-symbolic';

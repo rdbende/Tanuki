@@ -1,0 +1,50 @@
+using Gtk 4.0;
+using Adw 1;
+
+
+template $AccountRow : Adw.ActionRow {
+  height-request: 60;
+  title-lines: 1;
+  subtitle-lines: 1;
+  activatable: true;
+
+  styles ["account-switcher-row"]
+
+  [prefix]
+  Adw.Bin {
+    halign: start;
+    valign: center;
+
+    child: Overlay {
+      $AvatarButton avatar {
+        text: bind template.display_name;
+        avatar-url: bind template.avatar-url;
+        size: 42;
+      }
+
+      [overlay]
+      Image checkmark {
+        halign: end;
+        valign: end;
+        pixel-size: 11;
+        icon-name: "emblem-ok-symbolic";
+
+        styles ["blue-checkmark"]
+      }
+    };
+  }
+
+  title: bind template.display_name;
+  subtitle: bind template.username;
+
+  [suffix]
+  Button {
+    icon-name: "user-trash-symbolic";
+    valign: center;
+    margin-start: 12;
+    tooltip-text: _("Forget Account");
+
+
+    styles ["circular", "raised"]
+  }
+}
