@@ -25,7 +25,7 @@ class __TanukiSession(GObject.Object):
     @GObject.Signal
     def login_failed(self): ...
 
-    def __auth(self):
+    def _authenticate(self):
         try:
             self.gl.auth()
         except Exception:
@@ -35,11 +35,15 @@ class __TanukiSession(GObject.Object):
 
     def login(self, **kwargs):
         self.gl = gitlab.Gitlab(**kwargs)
-        run_in_thread(self.__auth)
+        run_in_thread(self._authenticate)
 
     @threaded
     def print_user(self, *_):
         print(self.gl.user)
+
+    @property
+    def logged_in(self) -> bool:
+        return hasattr(self, "gl")
 
 
 session = __TanukiSession()

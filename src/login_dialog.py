@@ -31,8 +31,9 @@ class LoginDialog(Adw.Dialog):
         self.connect("close-attempt", self.on_close_attempt)
 
     def on_close_attempt(self, *_):
+        self.force_close()
         app = get_application()
-        if app is not None:
+        if app is not None and not session.logged_in:
             app.quit()
 
     @Gtk.Template.Callback()

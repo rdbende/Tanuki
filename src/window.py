@@ -3,7 +3,7 @@
 # SPDX-FileCopyrightText: 2024  Benedek Dévényi
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from gi.repository import Adw, Gtk
+from gi.repository import Adw, Gio, Gtk
 from tanuki import LoginDialog
 
 
@@ -18,3 +18,5 @@ class TanukiWindow(Adw.ApplicationWindow):
 
         if not logged_in:
             LoginDialog().present(self)
+
+        self.settings = Gio.Settings("io.github.rdbende.Tanuki")

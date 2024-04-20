@@ -2,6 +2,7 @@
 #
 # SPDX-FileCopyrightText: 2024  Benedek Dévényi
 # SPDX-License-Identifier: GPL-3.0-or-later
+from __future__ import annotations
 
 import sys
 
@@ -10,7 +11,8 @@ from gi.repository import Adw, Gio
 app = None
 
 
-def get_application() -> Adw.Application | None:
+def get_application() -> TanukiApplication:
+    assert app is not None
     return app
 
 
