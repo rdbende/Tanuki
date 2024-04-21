@@ -6,11 +6,11 @@
   border: solid @accent_bg_color 2px;
   background-color: @accent_bg_color;
   margin: 0px;
-	opacity: 0;
+  opacity: 0;
 }
 
 .account-switcher-row:selected .blue-checkmark {
-	opacity: 1;
+  opacity: 1;
 }
 
 .account-switcher list {
@@ -19,18 +19,18 @@
 }
 
 .account-switcher-row {
-	border-radius: 10px;
-	margin: 3px 0px;
-	padding-right: 0px;
-	padding-left: 0px;
+  border-radius: 10px;
+  margin: 3px 0px;
+  padding-right: 0px;
+  padding-left: 0px;
 }
 
 .account-switcher-row:first-child {
-	margin-top: 0px;
+  margin-top: 0px;
 }
 
 .account-switcher-row:last-child {
-	margin-bottom: 0px;
+  margin-bottom: 0px;
 }
 
 .account-switcher separator {
