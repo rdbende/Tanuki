@@ -2,7 +2,7 @@
 
 .blue-checkmark {
   color: @light_1;
-  border-radius: 9999px;
+  border-radius: 100%;
   border: solid @accent_bg_color 2px;
   background-color: @accent_bg_color;
   margin: 0px;
@@ -38,10 +38,10 @@
 }
 
 .account-switcher-row:selected .avatar-button {
+  border-radius: 100%;
   border: 2px solid @accent_bg_color;
   padding: 0px;
 }
-
 
 .status-page-circular-image .icon {
   border-radius: 100%;

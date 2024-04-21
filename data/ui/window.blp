@@ -2,16 +2,43 @@ using Gtk 4.0;
 using Adw 1;
 
 template $MainWindow: Adw.ApplicationWindow {
-  default-width: 800;
+  default-width: 900;
   default-height: 600;
   width-request: 360;
   height-request: 294;
+
+  Adw.Breakpoint breakpoint {
+    condition ("max-width: 700sp")
+    setters {
+      split_view.collapsed: true;
+      siderbar_button.visible: true;
+    }
+  }
 
   content: Adw.ToastOverlay toast_overlay {
     child: Overlay {
       child: Adw.OverlaySplitView split_view {
         sidebar: $Sidebar sidebar {};
-        content: Adw.NavigationView navigation_view {};
+        content: Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar {
+            [start]
+            ToggleButton siderbar_button {
+              icon-name: "dock-left-symbolic";
+              tooltip-text: _("Toggle Sidebar");
+              visible: false;
+              active: bind split_view.show-sidebar bidirectional;
+            }
+
+            [end]
+            MenuButton view_menu {
+              icon-name: "view-more-symbolic";
+              tooltip-text: _("Menu");
+            }
+          }
+
+          content: Adw.NavigationView navigation_view {};
+        };
       };
     };
   };

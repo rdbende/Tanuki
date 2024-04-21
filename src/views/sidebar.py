@@ -13,7 +13,7 @@ from tanuki.tools import run_in_thread, RemoteImages
 
 
 
-class AvatarButton(Gtk.Button):
+class AvatarButton(Adw.Bin):
     __gtype_name__ = "AvatarButton"
 
     avatar_url = GObject.Property(type=str)
@@ -23,7 +23,7 @@ class AvatarButton(Gtk.Button):
 
     def __init__(self, avatar_url: str | None = None) -> None:
         super().__init__()
-        self.set_css_classes(["circular", "flat", "image-button", "avatar-button"])
+        self.set_css_classes(["avatar-button"])
 
         self.avatar = Adw.Avatar(show_initials=True)
         self.set_child(self.avatar)
