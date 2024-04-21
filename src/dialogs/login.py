@@ -26,8 +26,11 @@ class LoginDialog(Adw.Dialog):
     instance_entry: Adw.EntryRow = Gtk.Template.Child()
     token_entry: Adw.EntryRow = Gtk.Template.Child()
 
-    def __init__(self, **kwargs):
+    def __init__(self, first_login: bool = True, **kwargs):
         super().__init__(**kwargs)
+
+        if not first_login:
+            self.navigation_view.replace_with_tags(["instance"])
 
         self.a = session.connect("login-completed", self.login_completed)
         self.b = session.connect("login-failed", self.login_falied)
@@ -78,7 +81,7 @@ class LoginDialog(Adw.Dialog):
         # fixme: this is duct taped hack. the status page really should just be a custom widget
         self.navigation_view.push_by_tag("finished")
         self.all_set_page.set_paintable(RemoteImages.download(session.gl.user.avatar_url))  # illegal access!!!
-        self.all_set_page.set_title(_("Welcome {display_name}!".format(display_name=session.gl.user.name)))
+        self.all_set_page.set_title(_("Hi, {display_name}!".format(display_name=session.gl.user.name)))
 
         status_page_icon = self.all_set_page
         while not status_page_icon.has_css_class("icon"):

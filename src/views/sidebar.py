@@ -111,7 +111,7 @@ class AccountChooser(Gtk.MenuButton):
 
     @Gtk.Template.Callback()
     def on_add_new_account_clicked(self, *_):
-        LoginDialog().present(get_application().props.active_window)
+        LoginDialog(first_login=False).present(get_application().props.active_window)
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/view.ui")
