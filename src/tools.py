@@ -6,9 +6,8 @@
 from threading import Thread
 from typing import Callable
 
-from gi.repository import Gio, Gdk, GLib
-
 import requests
+from gi.repository import Gdk, Gio, GLib
 
 
 def threaded(func: Callable):

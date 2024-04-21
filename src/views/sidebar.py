@@ -3,14 +3,13 @@
 # SPDX-FileCopyrightText: 2024  Benedek Dévényi
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import requests
-from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
+from gi.repository import Adw, Gdk, Gio, GObject, Gtk
+from tanuki.architecture import async_job_finished
 from tanuki.backend import SessionManager, session
 from tanuki.dialogs.login import LoginDialog
 from tanuki.main import get_application
 from tanuki.settings import settings
-from tanuki.tools import run_in_thread, RemoteImages
-
+from tanuki.tools import RemoteImages
 
 
 class AvatarButton(Adw.Bin):
@@ -36,7 +35,11 @@ class AvatarButton(Adw.Bin):
 
     def update_custom_image(self, *_) -> None:
         if url := self.props.avatar_url:
-            run_in_thread(lambda: self.set_property("custom-image", RemoteImages.download(url)))
+            self.do_update_custom_image(RemoteImages.download, url)
+
+    @async_job_finished
+    def do_update_custom_image(self, image: Gdk.Texture) -> None:
+        self.props.custom_image = image
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/account_row.ui")

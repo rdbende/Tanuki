@@ -7,8 +7,8 @@
 from gi.repository import Adw, Gtk
 from tanuki.backend import session
 from tanuki.main import get_application
-from tanuki.widgets import SpinnerButton
 from tanuki.tools import RemoteImages
+from tanuki.widgets import SpinnerButton
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/dialogs/login.ui")
@@ -80,8 +80,12 @@ class LoginDialog(Adw.Dialog):
     def login_completed(self, *junk):
         # fixme: this is duct taped hack. the status page really should just be a custom widget
         self.navigation_view.push_by_tag("finished")
-        self.all_set_page.set_paintable(RemoteImages.download(session.gl.user.avatar_url))  # illegal access!!!
-        self.all_set_page.set_title(_("Hi, {display_name}!".format(display_name=session.gl.user.name)))
+        self.all_set_page.set_paintable(
+            RemoteImages.download(session.gl.user.avatar_url)
+        )  # illegal access!!!
+        self.all_set_page.set_title(
+            _("Hi, {display_name}!").format(display_name=session.gl.user.name)
+        )
 
         status_page_icon = self.all_set_page
         while not status_page_icon.has_css_class("icon"):
@@ -91,7 +95,7 @@ class LoginDialog(Adw.Dialog):
         status_page_icon.set_overflow(Gtk.Overflow.HIDDEN)
 
         self.login_button.stop()
-        #session.print_user()
+        # session.print_user()
 
     def login_falied(self, *junk) -> None:
         self.navigation_view.pop_to_tag("instance")
