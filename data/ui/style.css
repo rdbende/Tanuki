@@ -46,3 +46,25 @@
 .status-page-circular-image .icon {
   border-radius: 100%;
 }
+
+.sidebar-item {
+  padding: 0px;
+}
+
+.sidebar-item .header {
+  min-height: 42px;
+}
+
+.sidebar-item .badge {
+  font-weight: bold;
+  font-size: 0.7em;
+  border-radius: 10px;
+  min-width: 0.7em;
+  padding: 2px 5px;
+  background-color: alpha(@sidebar_fg_color, .3);
+  color: @text_view_bg;
+}
+
+.sidebar-item.needs-attention .badge {
+  background-color: @accent_bg_color;
+}

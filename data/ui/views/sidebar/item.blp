@@ -1,0 +1,24 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SidebarItem: Adw.ActionRow {
+  activatable: true;
+
+  styles ["sidebar-item"]
+
+  [prefix]
+  Image icon {
+    valign: center;
+    icon-name: bind template.icon-name;
+  }
+
+  [suffix]
+  Label badge {
+    label: bind template.badge_number;
+    visible: bind $is_not_zero(template.badge_number) as <bool>;
+    valign: center;
+
+    styles ["badge", "numeric"]
+  }
+}
+

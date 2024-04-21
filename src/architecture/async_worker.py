@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from gi.repository import Gio, GObject
+from gi.repository import Gio, GLib, GObject
 
 
 class AsyncWorker(GObject.Object):
@@ -24,8 +24,12 @@ class AsyncWorker(GObject.Object):
         self.data = {"args": args, "kwargs": kwargs}
 
     def _thread_callback(self, task, worker, *_):
-        result = self.operation(*self.data["args"], **self.data["kwargs"])
-        task.return_value(result)
+        try:
+            result = self.operation(*self.data["args"], **self.data["kwargs"])
+        except Exception as e:
+            task.return_error(GLib.Error(str(e)))
+        else:
+            task.return_value(result)
 
     def start(self):
         task = Gio.Task.new(self, None, self.callback, None)
@@ -33,7 +37,12 @@ class AsyncWorker(GObject.Object):
 
     def finish(self, result):
         if Gio.Task.is_valid(result, self):
-            return result.propagate_value().value
+            try:
+                result = result.propagate_value().value
+            except Exception as e:
+                print(e)
+            else:
+                return result
         else:
             raise RuntimeError("Gio.Task.is_valid() returned False")
 

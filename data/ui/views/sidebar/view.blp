@@ -21,6 +21,8 @@ template $Sidebar: Adw.Bin {
         menu-model: bind template.menu-model;
       }
     }
-    content: Adw.StatusPage {title: "Sidebar";};
+    content: ListBox list {
+      styles ["navigation-sidebar"]
+    };
   }
 }

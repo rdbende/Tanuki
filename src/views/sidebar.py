@@ -3,6 +3,8 @@
 # SPDX-FileCopyrightText: 2024  Benedek Dévényi
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from typing import Callable
+
 from gi.repository import Adw, Gio, GObject, Gtk
 from tanuki.backend import SessionManager, session
 from tanuki.dialogs.login import LoginDialog
@@ -107,11 +109,45 @@ class AccountChooser(Gtk.MenuButton):
         LoginDialog(first_login=False).present(get_application().props.active_window)
 
 
+@Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/item.ui")
+class SidebarItem(Adw.ActionRow):
+    __gtype_name__ = "SidebarItem"
+
+    icon_name = GObject.Property(type=str)
+    badge_number = GObject.Property(type=int)
+    needs_attention = GObject.Property(type=bool, default=False)
+
+    def __init__(self, title: str = "", icon_name: str = "") -> None:
+        super().__init__()
+
+        self.props.title = title
+        self.props.icon_name = icon_name
+
+        self.connect(
+            "notify::needs-attention",
+            lambda *_: (
+                self.add_css_class("needs-attention")
+                if self.props.needs_attention
+                else self.remove_css_class("needs-attention")
+            ),
+        )
+
+    @Gtk.Template.Callback()
+    def is_not_zero(self, *_) -> bool:
+        return self.props.badge_number != 0
+
+
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/view.ui")
 class Sidebar(Adw.Bin):
     __gtype_name__ = "Sidebar"
 
     menu_model = GObject.Property(type=Gio.MenuModel)
 
+    list: Gtk.ListBox = Gtk.Template.Child()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def add_item(self, item: SidebarItem, callback: Callable) -> None:
+        item.connect("activated", callback)
+        self.list.append(item)
