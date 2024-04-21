@@ -29,6 +29,7 @@ class AvatarButton(Adw.Bin):
         self.remote_image.bind_to(self.avatar, "custom-image")
         self.bind_property("size", self.avatar, "size")
         self.bind_property("text", self.avatar, "text")
+        self.bind_property("text", self, "tooltip-text")
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/account_row.ui")

@@ -17,9 +17,9 @@ template $AccountRow : Adw.ActionRow {
 
     child: Overlay {
       $AvatarButton avatar {
-        text: bind template.display_name;
-        avatar-url: bind template.avatar-url;
         size: 42;
+        text: bind template.username;
+        avatar-url: bind template.avatar-url;
       }
 
       [overlay]
