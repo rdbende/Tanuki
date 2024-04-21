@@ -7,7 +7,8 @@ from threading import Thread
 from typing import Callable
 
 import requests
-from gi.repository import Gdk, Gio, GLib
+from gi.repository import Gdk, Gio, GLib, GObject
+from tanuki.architecture import async_job_finished
 
 
 def threaded(func: Callable):
@@ -35,3 +36,22 @@ class RemoteImages:
         image = Gdk.Texture.new_from_bytes(GLib.Bytes(content))
         cls._downloaded_images[image_url] = image
         return image
+
+
+class RemoteImage(GObject.Object):
+    image = GObject.Property(type=Gdk.Texture)
+
+    def __init__(self, target: GObject.Object, target_property: str) -> None:
+        super().__init__()
+        target.connect("notify::" + target_property, self.update_image)
+
+    def bind_to(self, target: GObject.Object, target_property: str) -> None:
+        self.bind_property("image", target, target_property)
+
+    def update_image(self, source: GObject.Object, param: GObject.ParamSpec) -> None:
+        if url := source.get_property(param.name):
+            self.do_update_image(RemoteImages.download, url)
+
+    @async_job_finished
+    def do_update_image(self, image: Gdk.Texture) -> None:
+        self.props.image = image

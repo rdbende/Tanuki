@@ -3,17 +3,20 @@
 # SPDX-FileCopyrightText: 2024  Benedek Dévényi
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from gi.repository import Gio, GObject
+from __future__ import annotations
+
 from typing import Callable
+
+from gi.repository import Gio, GObject
 
 
 class AsyncWorker(GObject.Object):
     def __init__(
         self,
         *args,
-        operation=None,
-        callback=None,
-        **kwargs
+        operation: Callable,
+        callback: Callable[[AsyncWorker, Gio.Task, None], None] = None,
+        **kwargs,
     ):
         super().__init__()
         self.operation = operation
@@ -39,6 +42,7 @@ def async_job_finished(func: Callable):
     def wrapper(self, op: Callable, *args, **kwargs):
         def cb(w, r, _):
             func(self, w.finish(r))
+
         AsyncWorker(*args, operation=op, callback=cb, **kwargs).start()
 
     return wrapper

@@ -3,13 +3,12 @@
 # SPDX-FileCopyrightText: 2024  Benedek Dévényi
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from gi.repository import Adw, Gdk, Gio, GObject, Gtk
-from tanuki.architecture import async_job_finished
+from gi.repository import Adw, Gio, GObject, Gtk
 from tanuki.backend import SessionManager, session
 from tanuki.dialogs.login import LoginDialog
 from tanuki.main import get_application
 from tanuki.settings import settings
-from tanuki.tools import RemoteImages
+from tanuki.tools import RemoteImage
 
 
 class AvatarButton(Adw.Bin):
@@ -18,28 +17,18 @@ class AvatarButton(Adw.Bin):
     avatar_url = GObject.Property(type=str)
     size = GObject.Property(type=int)
     text = GObject.Property(type=str)
-    custom_image = GObject.Property(type=Gdk.Texture)
 
-    def __init__(self, avatar_url: str | None = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.set_css_classes(["avatar-button"])
+        self.add_css_class("avatar-button")
 
         self.avatar = Adw.Avatar(show_initials=True)
         self.set_child(self.avatar)
+
+        self.remote_image = RemoteImage(self, "avatar-url")
+        self.remote_image.bind_to(self.avatar, "custom-image")
         self.bind_property("size", self.avatar, "size")
         self.bind_property("text", self.avatar, "text")
-        self.bind_property("custom-image", self.avatar, "custom-image")
-
-        self.props.avatar_url = avatar_url or ""
-        self.connect("notify::avatar-url", self.update_custom_image)
-
-    def update_custom_image(self, *_) -> None:
-        if url := self.props.avatar_url:
-            self.do_update_custom_image(RemoteImages.download, url)
-
-    @async_job_finished
-    def do_update_custom_image(self, image: Gdk.Texture) -> None:
-        self.props.custom_image = image
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/account_row.ui")
