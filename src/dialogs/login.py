@@ -5,7 +5,7 @@
 
 
 from gi.repository import Adw, Gtk
-from tanuki.backend import session
+from tanuki.backend import PersonalAccessTokenLogin, SessionManager, session
 from tanuki.main import get_application
 from tanuki.tools import RemoteImages
 from tanuki.widgets import SpinnerButton
@@ -40,7 +40,7 @@ class LoginDialog(Adw.Dialog):
     def on_close_attempt(self, *_):
         self.force_close()
         app = get_application()
-        if app is not None and not session.logged_in:
+        if app is not None and not SessionManager.any_sessions():
             app.quit()
 
         # FIXME: WHY????
@@ -75,16 +75,17 @@ class LoginDialog(Adw.Dialog):
         if not instance_url.startswith("http"):
             instance_url = "https://" + instance_url
 
-        session.login(url=instance_url, private_token=self.token_entry.get_text())
+        login = PersonalAccessTokenLogin(url=instance_url, token=self.token_entry.get_text())
+        session.create_session(login)
 
     def login_completed(self, *junk):
         # fixme: this is duct taped hack. the status page really should just be a custom widget
         self.navigation_view.push_by_tag("finished")
         self.all_set_page.set_paintable(
-            RemoteImages.download(session.gl.user.avatar_url)
+            RemoteImages.download(session._gitlab.user.avatar_url)
         )  # illegal access!!!
         self.all_set_page.set_title(
-            _("Hi, {display_name}!").format(display_name=session.gl.user.name)
+            _("Hi, {display_name}!").format(display_name=session._gitlab.user.name)
         )
 
         status_page_icon = self.all_set_page
@@ -95,7 +96,6 @@ class LoginDialog(Adw.Dialog):
         status_page_icon.set_overflow(Gtk.Overflow.HIDDEN)
 
         self.login_button.stop()
-        # session.print_user()
 
     def login_falied(self, *junk) -> None:
         self.navigation_view.pop_to_tag("instance")
@@ -103,3 +103,6 @@ class LoginDialog(Adw.Dialog):
 
     def show_toast(self, message: str) -> None:
         self.toaster.add_toast(Adw.Toast(title=message, timeout=3))
+
+    def present(self) -> None:
+        super().present(get_application().props.active_window)

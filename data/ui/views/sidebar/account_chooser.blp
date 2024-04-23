@@ -3,7 +3,7 @@ using Adw 1;
 
 
 template $AccountChooser : MenuButton {
-  popover: account_popover;
+  popover: popover;
   styles ["flat", "circular"]
 
   $AvatarButton avatar {
@@ -11,7 +11,7 @@ template $AccountChooser : MenuButton {
   }
 }
 
-Popover account_popover {
+Popover popover {
   styles ["account-switcher"]
 
   Box {

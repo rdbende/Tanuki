@@ -43,7 +43,7 @@ template $AccountRow : Adw.ActionRow {
     valign: center;
     margin-start: 12;
     tooltip-text: _("Forget Account");
-
+    clicked => $remove_account();
 
     styles ["circular", "raised"]
   }

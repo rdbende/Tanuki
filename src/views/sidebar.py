@@ -6,10 +6,8 @@
 from typing import Callable
 
 from gi.repository import Adw, Gio, GObject, Gtk
-from tanuki.backend import SessionManager, session
+from tanuki.backend import SessionManager, session, settings
 from tanuki.dialogs.login import LoginDialog
-from tanuki.main import get_application
-from tanuki.settings import settings
 from tanuki.tools import RemoteImage
 
 
@@ -60,6 +58,10 @@ class AccountRow(Adw.ActionRow):
     def switch_account(self, *_) -> None:
         session.start_session(self._session_id)
 
+    @Gtk.Template.Callback()
+    def remove_account(self, *_) -> None:
+        SessionManager.remove_session(self._session_id)
+
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/account_chooser.ui")
 class AccountChooser(Gtk.MenuButton):
@@ -67,6 +69,7 @@ class AccountChooser(Gtk.MenuButton):
 
     avatar: AvatarButton = Gtk.Template.Child()
     accounts: Gtk.ListBox = Gtk.Template.Child()
+    popover: Gtk.Popover = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -74,8 +77,10 @@ class AccountChooser(Gtk.MenuButton):
         settings.connect("changed::current-session", self.set_active_account)
         session.connect("login-started", lambda *_: self.set_sensitive(False))
         session.connect("login-completed", lambda *_: self.set_sensitive(True))
+        session.connect("login-failed", lambda *_: self.set_sensitive(True))
         self.accounts.connect("selected-rows-changed", self.set_avatar_sizes)
 
+        self._rows = {}
         self.reload_account_list()
 
     def set_avatar_sizes(self, *_):
@@ -84,14 +89,18 @@ class AccountChooser(Gtk.MenuButton):
             row.set_avatar_size()
             row = row.get_next_sibling()
 
-    def set_active_account(self, *_):
-        current_session = settings.get_string("current-session")
-        data = SessionManager.get_session_from_id(current_session)
-        self.avatar.props.avatar_url = data["avatar"]
+    def set_active_account(self, obj: Gio.Settings, setting: str) -> None:
+        session = obj.get_property(setting)
+        if session:
+            self.avatar.props.avatar_url = SessionManager.get_avatar_url_for_session(session)
+            self.accounts.select_row(self._rows[session])
+        else:
+            self.avatar.props.avatar_url = ""
 
     def reload_account_list(self, *_):
         self.accounts.remove_all()
-        current_session = settings.get_string("current-session")
+        self._rows.clear()
+
         for id, account in SessionManager.get_sessions().items():
             row = AccountRow(
                 username=account["username"],
@@ -101,12 +110,11 @@ class AccountChooser(Gtk.MenuButton):
             )
 
             self.accounts.append(row)
-            if id == current_session:
-                self.accounts.select_row(row)
+            self._rows[id] = row
 
     @Gtk.Template.Callback()
     def on_add_new_account_clicked(self, *_):
-        LoginDialog(first_login=False).present(get_application().props.active_window)
+        LoginDialog(first_login=False).present()
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/item.ui")
@@ -144,6 +152,7 @@ class Sidebar(Adw.Bin):
     menu_model = GObject.Property(type=Gio.MenuModel)
 
     list: Gtk.ListBox = Gtk.Template.Child()
+    account_chooser: AccountChooser = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

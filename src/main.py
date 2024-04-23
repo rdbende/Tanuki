@@ -8,13 +8,6 @@ import sys
 
 from gi.repository import Adw, Gio
 
-app = None
-
-
-def get_application() -> TanukiApplication:
-    assert app is not None
-    return app
-
 
 class TanukiApplication(Adw.Application):
     """The main application singleton class."""
@@ -67,6 +60,14 @@ class TanukiApplication(Adw.Application):
         self.add_action(action)
         if shortcuts:
             self.set_accels_for_action(f"app.{name}", shortcuts)
+
+
+app = None
+
+
+def get_application() -> TanukiApplication:
+    assert app is not None
+    return app
 
 
 def main(version):

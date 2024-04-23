@@ -49,8 +49,11 @@ class RemoteImage(GObject.Object):
         self.bind_property("image", target, target_property)
 
     def update_image(self, source: GObject.Object, param: GObject.ParamSpec) -> None:
-        if url := source.get_property(param.name):
+        url = source.get_property(param.name)
+        if url:
             self.do_update_image(RemoteImages.download, url)
+        else:
+            self.props.image = None
 
     @async_job_finished
     def do_update_image(self, image: Gdk.Texture) -> None:

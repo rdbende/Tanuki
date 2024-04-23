@@ -5,8 +5,7 @@
 
 
 from gi.repository import Adw, Gio, GObject, Gtk
-from tanuki import settings
-from tanuki.backend import session
+from tanuki.backend import session, settings
 from tanuki.dialogs.login import LoginDialog
 from tanuki.views.sidebar import Sidebar, SidebarItem
 
@@ -24,13 +23,22 @@ class MainWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        current_session = settings.get_string("current-session")
+        self.setup_components()
+
+        current_session = settings.props.current_session
         if not current_session:
-            LoginDialog().present(self)
+            self.set_up_account()
         else:
             session.start_session(current_session)
 
-        self.setup_components()
+        settings.connect(
+            "changed::current-session",
+            lambda o, s: self.set_up_account() if not o.get_property(s) else None,
+        )
+
+    def set_up_account(self):
+        self.sidebar.account_chooser.popdown()
+        LoginDialog().present()
 
     def setup_components(self):
         self.sidebar.menu_model = self.primary_menu
