@@ -60,7 +60,7 @@ class AccountRow(Adw.ActionRow):
 
     @Gtk.Template.Callback()
     def remove_account(self, *_) -> None:
-        SessionManager.remove_session(self._session_id)
+        session.remove_session(self._session_id)
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/account_chooser.ui")

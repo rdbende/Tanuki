@@ -22,6 +22,7 @@ schema = Secret.Schema.new(
 
 
 class SessionManager:
+    # TODO: make this class private, at least somewhat
     _sessions = {}
 
     @classmethod
@@ -89,11 +90,10 @@ class SessionManager:
         }
 
         serialized_sessions = json.dumps(sessions)
-        print("add", serialized_sessions)
         settings.props.sessions = serialized_sessions
 
     @classmethod
-    def remove_session(cls, session_id: str) -> None:
+    def delete_session(cls, session_id: str) -> None:
         sessions = cls.get_sessions()
         sessions.pop(session_id)
 
@@ -147,18 +147,32 @@ class Tanuki(GObject.Object):
     def _save_and_start_session(self, auth_succeded: bool) -> None:
         if auth_succeded:
             session_id = SessionManager.create_session_if_not_exists(self._gitlab)
-            self.start_session(session_id)
+            self.start_session(session_id, _dont_reload_if_token_is_none=True)
         else:
             self.emit("login-failed")
 
-    def start_session(self, session_id: str) -> None:
+    def start_session(
+        self, session_id: str, *, _dont_reload_if_token_is_none: bool = False
+    ) -> None:
         url = SessionManager.get_session_from_id(session_id)["url"]
 
         def finish(_, task: Gio.Task) -> None:
-            self._gitlab = gitlab.Gitlab(url=url, private_token=Secret.password_lookup_finish(task))
-            run_in_thread(self._authenticate)
+            token = Secret.password_lookup_finish(task)
+
+            if token is None and _dont_reload_if_token_is_none:
+                # This sucks, I know, but the keyring is being slow sometimes when storing secrets
+                settings.props.current_session = SessionManager.get_session_id(self._gitlab)
+                self.emit("login-completed")
+                return
+            else:
+                self._gitlab = gitlab.Gitlab(url=url, private_token=token)
+                run_in_thread(self._authenticate)
 
         Secret.password_lookup(schema, {"session-id": session_id}, None, finish)
+
+    def remove_session(self, session_id: str) -> None:
+        self._gitlab = None
+        SessionManager.delete_session(session_id)
 
 
 session = Tanuki()
