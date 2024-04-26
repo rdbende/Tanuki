@@ -33,6 +33,13 @@ template $MainWindow: Adw.ApplicationWindow {
               active: bind split_view.show-sidebar bidirectional;
             }
 
+            [start]
+            Button back_button {
+              icon-name: "left-large-symbolic";
+              tooltip-text: _("Back");
+              clicked => $back();
+            }
+
             [end]
             MenuButton view_menu {
               icon-name: "view-more-symbolic";
@@ -57,6 +64,12 @@ template $MainWindow: Adw.ApplicationWindow {
                   child: Adw.StatusPage {
                     title: bind home_page.title;
                     icon-name: bind home_page.icon-name;
+                    child: Button {
+                      label: "Open Profile";
+                      halign: center;
+                      styles ["suggested-action", "pill"]
+                      clicked => $user_own_profile();
+                    };
                   };
                 }
                 Adw.ViewStackPage activity_page {

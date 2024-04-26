@@ -174,5 +174,12 @@ class Tanuki(GObject.Object):
         self._gitlab = None
         SessionManager.delete_session(session_id)
 
+    def get_user(self, username: str):
+        return self._gitlab.users.get(self._gitlab.users.list(username=username)[0].id)
+
+    @property
+    def active_username(self) -> str:
+        return self._gitlab.user.username
+
 
 session = Tanuki()

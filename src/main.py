@@ -70,6 +70,11 @@ def get_application() -> TanukiApplication:
     return app
 
 
+def get_main_window() -> MainWindow | None:
+    assert app is not None
+    return app.get_active_window()
+
+
 def main(version):
     """The application's entry point."""
     global app
