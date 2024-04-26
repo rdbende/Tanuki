@@ -20,12 +20,24 @@ template $LoginDialog : Adw.Dialog {
             icon-name: "io.github.rdbende.Tanuki";
             title: _("Welcome to Tanuki!");
 
-            Button start_button {
-              label: _("Log In");
-              halign: center;
-              action-name: "navigation.push";
-              action-target: "'instance'";
-              styles ["suggested-action", "pill"]
+            Box {
+              orientation: vertical;
+              spacing: 6;
+
+              Button start_button {
+                label: _("Log In");
+                halign: center;
+                action-name: "navigation.push";
+                action-target: "'instance'";
+                styles ["suggested-action", "pill"]
+              }
+
+              Button {
+                label: _("Log In with GitLab.com");
+                halign: center;
+                clicked => $login_with_oauth();
+                styles ["suggested-action", "pill"]
+              }
             }
           };
         }
@@ -135,3 +147,4 @@ template $LoginDialog : Adw.Dialog {
     }
   };
 }
+

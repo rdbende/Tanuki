@@ -1,8 +1,9 @@
 [Desktop Entry]
 Name=tanuki
-Exec=io.github.rdbende.Tanuki
+Exec=io.github.rdbende.Tanuki %u
 Icon=io.github.rdbende.Tanuki
 Terminal=false
 Type=Application
 Categories=GTK;
 StartupNotify=true
+MimeType=x-scheme-handler/tanuki;

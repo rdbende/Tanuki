@@ -5,7 +5,7 @@
 
 
 from gi.repository import Adw, Gtk
-from tanuki.backend import PersonalAccessTokenLogin, SessionManager, session
+from tanuki.backend import GitLabDotComOAuthLogin, PersonalAccessTokenLogin, SessionManager, session
 from tanuki.main import get_application
 from tanuki.tools import RemoteImages
 from tanuki.widgets import SpinnerButton
@@ -48,6 +48,10 @@ class LoginDialog(Adw.Dialog):
 
         session.disconnect(self.a)
         session.disconnect(self.b)
+
+    @Gtk.Template.Callback()
+    def login_with_oauth(self, *_) -> bool:
+        GitLabDotComOAuthLogin().start_auth_flow(callback=session.create_session)
 
     @Gtk.Template.Callback()
     def string_is_not_empty(self, _, string) -> bool:

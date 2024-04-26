@@ -6,7 +6,8 @@ from __future__ import annotations
 
 import sys
 
-from gi.repository import Adw, Gio
+from gi.repository import Adw, Gio, GLib
+from tanuki.backend import OAuthLogin
 
 
 class TanukiApplication(Adw.Application):
@@ -14,10 +15,24 @@ class TanukiApplication(Adw.Application):
 
     def __init__(self):
         super().__init__(
-            application_id="io.github.rdbende.Tanuki", flags=Gio.ApplicationFlags.DEFAULT_FLAGS
+            application_id="io.github.rdbende.Tanuki", flags=Gio.ApplicationFlags.HANDLES_OPEN
         )
         self.create_action("quit", lambda *_: self.quit(), ["<primary>q"])
         self.create_action("about", self.on_about_action, ["F1"])
+
+    def do_open(self, files: list[Gio.File], *_):
+        uri = GLib.Uri.parse(files[0].get_uri(), GLib.UriFlags.NONE)
+        if uri.get_scheme() == "tanuki":
+            query = uri.get_query()
+            if query:
+                uri_params = GLib.Uri.parse_params(
+                    uri.get_query(), -1, "&", GLib.UriParamsFlags.NONE
+                )
+
+                if "code" in uri_params and "state" in uri_params:
+                    OAuthLogin.redirect(uri_params.get("code"), uri_params.get("state"))
+
+        self.do_activate()
 
     def do_activate(self):
         """Called when the application is activated.

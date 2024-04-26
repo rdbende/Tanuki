@@ -7,8 +7,8 @@
 from gi.repository import Adw, Gio, GObject, Gtk
 from tanuki.backend import session, settings
 from tanuki.dialogs.login import LoginDialog
-from tanuki.views.sidebar import Sidebar, SidebarItem
 from tanuki.pages import UserPage
+from tanuki.views.sidebar import Sidebar, SidebarItem
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/window.ui")
@@ -39,7 +39,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def user_own_profile(self, *_):
-        self.add_page(UserPage(session.active_username))
+        self.add_page(UserPage(session.get_account_info().username))
 
     @Gtk.Template.Callback()
     def back(self, *_):

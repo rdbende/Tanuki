@@ -92,7 +92,7 @@ class AccountChooser(Gtk.MenuButton):
     def set_active_account(self, obj: Gio.Settings, setting: str) -> None:
         session = obj.get_property(setting)
         if session:
-            self.avatar.props.avatar_url = SessionManager.get_avatar_url_for_session(session)
+            self.avatar.props.avatar_url = SessionManager.get_session_from_id(session).avatar_url
             self.accounts.select_row(self._rows[session])
         else:
             self.avatar.props.avatar_url = ""
@@ -105,7 +105,7 @@ class AccountChooser(Gtk.MenuButton):
             row = AccountRow(
                 username=account["username"],
                 display_name=account["name"],
-                avatar_url=account["avatar"],
+                avatar_url=account["avatar_url"],
                 session_id=id,
             )
 

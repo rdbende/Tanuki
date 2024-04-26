@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from gi.repository import Adw, Gtk, GObject
+from gi.repository import Adw, GObject, Gtk
 from gitlab.base import RESTObject
-from tanuki.main import get_main_window
 from tanuki.backend import session
-from tanuki.tools import async_job_finished, RemoteImage
+from tanuki.main import get_main_window
+from tanuki.tools import RemoteImage, async_job_finished
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/pages/user.ui")
