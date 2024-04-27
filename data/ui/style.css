@@ -73,3 +73,7 @@
   -gtk-icon-size: 32px;
   padding: 12px;
 }
+
+.icon-size-32 {
+  -gtk-icon-size: 32px;
+}

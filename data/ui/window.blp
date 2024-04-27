@@ -20,80 +20,83 @@ template $MainWindow: Adw.ApplicationWindow {
     child: Overlay {
       child: Adw.OverlaySplitView split_view {
         sidebar: $Sidebar sidebar {};
-        content: Adw.ToolbarView {
-          bottom-bar-style: raised;
+        content: Adw.NavigationView navigation_view {
+          Adw.NavigationPage home_view {
+            title: "Home";
+            tag: "home-view";
+            child: Adw.ToolbarView {
+              bottom-bar-style: raised;
 
-          [top]
-          Adw.HeaderBar {
-            [start]
-            ToggleButton siderbar_button {
-              icon-name: "dock-left-symbolic";
-              tooltip-text: _("Toggle Sidebar");
-              visible: false;
-              active: bind split_view.show-sidebar bidirectional;
-            }
-
-            [start]
-            Button back_button {
-              icon-name: "left-large-symbolic";
-              tooltip-text: _("Back");
-              clicked => $back();
-            }
-
-            [end]
-            MenuButton view_menu {
-              icon-name: "view-more-symbolic";
-              tooltip-text: _("Menu");
-            }
-          }
-
-          [bottom]
-          Adw.ViewSwitcherBar mobile_stack_switcher {
-            stack: home_stack;
-          }
-
-          content: Adw.NavigationView navigation_view {
-            Adw.NavigationPage home_view {
-              title: "Home";
-              tag: "home-view";
-              Adw.ViewStack home_stack {
-                Adw.ViewStackPage home_page {
-                  name: "home_page";
-                  title: "Home";
-                  icon-name: "home-symbolic";
-                  child: Adw.StatusPage {
-                    title: bind home_page.title;
-                    icon-name: bind home_page.icon-name;
-                    child: Button {
-                      label: "Open Profile";
-                      halign: center;
-                      styles ["suggested-action", "pill"]
-                      clicked => $user_own_profile();
-                    };
-                  };
+              [top]
+              Adw.HeaderBar {
+                [start]
+                ToggleButton siderbar_button {
+                  icon-name: "dock-left-symbolic";
+                  tooltip-text: _("Toggle Sidebar");
+                  visible: false;
+                  active: bind split_view.show-sidebar bidirectional;
                 }
-                Adw.ViewStackPage activity_page {
-                  name: "activity_page";
-                  title: "Activity";
-                  icon-name: "charge-symbolic";
-                  badge-number: 10;
-                  child: Adw.StatusPage {
-                    title: bind activity_page.title;
-                    icon-name: bind activity_page.icon-name;
-                  };
-                }
-                Adw.ViewStackPage explore_page {
-                  name: "explore_page";
-                  title: "Explore";
-                  icon-name: "explore2-large-symbolic";
-                  child: Adw.StatusPage {
-                    title: bind explore_page.title;
-                    icon-name: bind explore_page.icon-name;
-                  };
+
+                [end]
+                MenuButton view_menu {
+                  icon-name: "view-more-symbolic";
+                  tooltip-text: _("Menu");
                 }
               }
-            }
-          };
+
+              [bottom]
+              Adw.ViewSwitcherBar mobile_stack_switcher {
+                stack: home_stack;
+              }
+
+              content: Stack loading_stack {
+                Box spinner_box {
+                  halign: center;
+                  valign: center;
+                  Spinner logging_in_spinner {
+                    styles ["icon-size-32"]
+                  }
+                }
+
+                Adw.ViewStack home_stack {
+                  Adw.ViewStackPage home_page {
+                    name: "home_page";
+                    title: "Home";
+                    icon-name: "home-symbolic";
+                    child: Adw.StatusPage {
+                      title: bind home_page.title;
+                      icon-name: bind home_page.icon-name;
+                      child: Button {
+                        label: "Open Profile";
+                        halign: center;
+                        styles ["suggested-action", "pill"]
+                        clicked => $user_own_profile();
+                      };
+                    };
+                  }
+                  Adw.ViewStackPage activity_page {
+                    name: "activity_page";
+                    title: "Activity";
+                    icon-name: "charge-symbolic";
+                    badge-number: 10;
+                    child: Adw.StatusPage {
+                      title: bind activity_page.title;
+                      icon-name: bind activity_page.icon-name;
+                    };
+                  }
+                  Adw.ViewStackPage explore_page {
+                    name: "explore_page";
+                    title: "Explore";
+                    icon-name: "explore2-large-symbolic";
+                    child: Adw.StatusPage {
+                      title: bind explore_page.title;
+                      icon-name: bind explore_page.icon-name;
+                    };
+                  }
+                }
+              };
+            };
+          }
         };
       };
     };
