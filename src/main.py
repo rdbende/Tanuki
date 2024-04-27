@@ -18,6 +18,9 @@ class TanukiApplication(Adw.Application):
             application_id="io.github.rdbende.Tanuki", flags=Gio.ApplicationFlags.HANDLES_OPEN
         )
         self.create_action("quit", lambda *_: self.quit(), ["<primary>q"])
+        self.create_action(
+            "add_new_account", self.on_add_new_account, parameter_type=GLib.VariantType("b")
+        )
         self.create_action("about", self.on_about_action, ["F1"])
 
     def do_open(self, files: list[Gio.File], *_):
@@ -45,7 +48,7 @@ class TanukiApplication(Adw.Application):
         win = self.props.active_window
 
         if not win:
-            from .window import MainWindow
+            from tanuki.window import MainWindow
 
             win = MainWindow(application=self)
 
@@ -63,7 +66,14 @@ class TanukiApplication(Adw.Application):
         )
         about.present(self.props.active_window)
 
-    def create_action(self, name, callback, shortcuts=None):
+    def on_add_new_account(self, _, value):
+        from tanuki.dialogs.account_setup import LoginDialog
+
+        win = self.props.active_window
+        win.sidebar.account_chooser.popdown()
+        LoginDialog(skip_welcome_page=value.get_boolean()).present(win)
+
+    def create_action(self, name, callback, shortcuts=None, parameter_type=None):
         """Add an application action.
 
         Args:
@@ -72,7 +82,7 @@ class TanukiApplication(Adw.Application):
               activated
             shortcuts: an optional list of accelerators
         """
-        action = Gio.SimpleAction.new(name, None)
+        action = Gio.SimpleAction.new(name, parameter_type)
         action.connect("activate", callback)
         self.add_action(action)
         if shortcuts:

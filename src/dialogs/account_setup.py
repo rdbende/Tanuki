@@ -131,6 +131,3 @@ class LoginDialog(Adw.Dialog):
 
         for handler in self._callback_handler_ids:
             session.disconnect(handler)
-
-    def present(self) -> None:
-        super().present(get_application().props.active_window)

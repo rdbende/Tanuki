@@ -26,7 +26,8 @@ Popover popover {
     Separator {}
 
     Button {
-      clicked => $on_add_new_account_clicked();
+      action-name: "app.add_new_account";
+      action-target: "true";
       child: Adw.ButtonContent {
         icon-name: "list-add-symbolic";
         use-underline: true;

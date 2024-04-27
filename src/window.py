@@ -4,9 +4,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from gi.repository import Adw, Gio, GObject, Gtk
+from gi.repository import Adw, Gio, GLib, GObject, Gtk
 from tanuki.backend import session, settings
-from tanuki.dialogs.account_setup import LoginDialog
 from tanuki.pages import UserPage
 from tanuki.views.sidebar import Sidebar, SidebarItem
 
@@ -45,14 +44,13 @@ class MainWindow(Adw.ApplicationWindow):
     def back(self, *_):
         self.navigation_view.pop()
 
+    def set_up_account(self, *_) -> None:
+        self.get_application().activate_action("add_new_account", GLib.Variant.new_boolean(True))
+
     def add_page(self, page: Adw.Bin) -> None:
         nav_page = Adw.NavigationPage(title="Page")
         nav_page.set_child(page)
         self.navigation_view.push(nav_page)
-
-    def set_up_account(self):
-        self.sidebar.account_chooser.popdown()
-        LoginDialog(skip_welcome_page=False).present()
 
     def setup_components(self):
         self.sidebar.menu_model = self.primary_menu

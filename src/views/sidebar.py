@@ -112,10 +112,6 @@ class AccountChooser(Gtk.MenuButton):
             self.accounts.append(row)
             self._rows[id] = row
 
-    @Gtk.Template.Callback()
-    def on_add_new_account_clicked(self, *_):
-        LoginDialog(skip_welcome_page=True).present()
-
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/item.ui")
 class SidebarItem(Adw.ActionRow):
