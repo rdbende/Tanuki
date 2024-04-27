@@ -20,23 +20,42 @@ template $LoginDialog : Adw.Dialog {
             icon-name: "io.github.rdbende.Tanuki";
             title: _("Welcome to Tanuki!");
 
+            Button start_button {
+              label: _("Log In");
+              halign: center;
+              action-name: "navigation.push";
+              action-target: "'auth_methods'";
+              styles ["suggested-action", "pill"]
+            }
+          };
+        }
+      }
+
+      Adw.NavigationPage {
+        title: "Tanuki";
+        tag: "auth_methods";
+        Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar { show-title: false; }
+
+          content: Adw.StatusPage {
+            title: _("Log in to GitLab");
+            description: _("Choose a provider or log in manually");
+
             Box {
               orientation: vertical;
-              spacing: 6;
+              spacing: 30;
+              margin-start: 36;
+              margin-end: 36;
 
-              Button start_button {
-                label: _("Log In");
+              Box oauth_providers_box { spacing: 12; }
+
+              Button {
+                label: _("Log In Manually");
                 halign: center;
                 action-name: "navigation.push";
                 action-target: "'instance'";
-                styles ["suggested-action", "pill"]
-              }
-
-              Button {
-                label: _("Log In with GitLab.com");
-                halign: center;
-                clicked => $login_with_oauth();
-                styles ["suggested-action", "pill"]
+                styles ["flat"]
               }
             }
           };
@@ -44,7 +63,23 @@ template $LoginDialog : Adw.Dialog {
       }
 
       Adw.NavigationPage {
-        title: _("Select Instance");
+        title: _("Confirm Authorization");
+        tag: "confirm_oauth";
+
+        Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar { show-title: false; }
+
+          content: Adw.StatusPage {
+            title: _("Confirm Authorization");
+            description: _("Allow access to your account in the browser");
+            icon-name: "key-symbolic";
+          };
+        }
+      }
+
+      Adw.NavigationPage {
+        title: _("GitLab Instance");
         tag: "instance";
         Adw.ToolbarView {
           [top]
@@ -52,7 +87,7 @@ template $LoginDialog : Adw.Dialog {
 
           content: Adw.StatusPage {
             title: _("GitLab Instance");
-            description: _("Enter the URL of your GitLab instance");
+            description: _("Enter the domain of the GitLab instance");
 
             Box {
               orientation: vertical;
@@ -63,8 +98,8 @@ template $LoginDialog : Adw.Dialog {
                   styles ["boxed-list"]
 
                   Adw.EntryRow instance_entry {
-                    title: _("Instance URL");
-                    text: "https://gitlab.com";
+                    title: _("Instance Domain");
+                    text: "gitlab.com";
                     can-focus: true;
                     entry-activated => $go_to_login_page();
                   }
@@ -90,9 +125,8 @@ template $LoginDialog : Adw.Dialog {
           [top]
           Adw.HeaderBar { show-title: false; }
 
-          content: Adw.StatusPage {
-            title: _("Log In");
-            description: _("Enter your GitLab token to start using Tanuki");
+          content: Adw.StatusPage login_status_page {
+            description: _("Authenticate with your personal access token");
 
             Box {
               orientation: vertical;
@@ -103,9 +137,9 @@ template $LoginDialog : Adw.Dialog {
                   styles ["boxed-list"]
 
                   Adw.EntryRow token_entry {
-                    title: _("Token");
+                    title: _("Access Token");
                     can-focus: true;
-                    entry-activated => $on_login_clicked();
+                    entry-activated => $start_login_clicked();
                   }
                 }
               }
@@ -114,7 +148,7 @@ template $LoginDialog : Adw.Dialog {
                 label: _("Next");
                 halign: center;
                 sensitive: bind $string_is_not_empty(token_entry.text) as <bool>;
-                clicked => $on_login_clicked();
+                clicked => $start_login_clicked();
                 styles ["suggested-action", "pill"]
               }
             }
@@ -123,8 +157,30 @@ template $LoginDialog : Adw.Dialog {
       }
 
       Adw.NavigationPage {
-        title: _("Finished");
-        tag: "finished";
+        title: _("Access Denied");
+        tag: "oauth_access_denied";
+
+        Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar { show-title: false; }
+
+          content: Adw.StatusPage {
+            title: _("Access Denied");
+            description: _("Access to your account was denied");
+
+            Button {
+              label: _("Other Login Options");
+              halign: center;
+              clicked => $go_to_auth_methods_page();
+              styles ["suggested-action", "pill"]
+            }
+          };
+        }
+      }
+
+      Adw.NavigationPage {
+        title: _("Completed");
+        tag: "completed";
         can-pop: false;
 
         Adw.ToolbarView {
@@ -138,7 +194,7 @@ template $LoginDialog : Adw.Dialog {
             Button finish_button {
               label: _("Finish");
               halign: center;
-              clicked => $on_complete_clicked();
+              clicked => $finish_clicked();
               styles ["suggested-action", "pill"]
             }
           };

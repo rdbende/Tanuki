@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/io/github/rdbende/Tanuki">
-    <file preprocess="xml-stripblanks">dialogs/login.ui</file>
-    <file preprocess="xml-stripblanks">widgets/spinner_button.ui</file>
-    <file preprocess="xml-stripblanks">views/sidebar/view.ui</file>
+    <file preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">shortcuts.ui</file>
+    <file preprocess="xml-stripblanks">dialogs/account_setup.ui</file>
+    <file preprocess="xml-stripblanks">pages/user.ui</file>
     <file preprocess="xml-stripblanks">views/sidebar/account_chooser.ui</file>
     <file preprocess="xml-stripblanks">views/sidebar/account_row.ui</file>
     <file preprocess="xml-stripblanks">views/sidebar/item.ui</file>
+    <file preprocess="xml-stripblanks">views/sidebar/view.ui</file>
+    <file preprocess="xml-stripblanks">widgets/spinner_button.ui</file>
     <file preprocess="xml-stripblanks">window.ui</file>
-    <file preprocess="xml-stripblanks">pages/user.ui</file>
-    <file preprocess="xml-stripblanks" alias="gtk/help-overlay.ui">shortcuts.ui</file>
     <file alias="style.css">ui/style.css</file>
   </gresource>
 </gresources>

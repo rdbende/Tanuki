@@ -7,7 +7,7 @@ from typing import Callable
 
 from gi.repository import Adw, Gio, GObject, Gtk
 from tanuki.backend import SessionManager, session, settings
-from tanuki.dialogs.login import LoginDialog
+from tanuki.dialogs.account_setup import LoginDialog
 from tanuki.tools import RemoteImage
 
 
@@ -114,7 +114,7 @@ class AccountChooser(Gtk.MenuButton):
 
     @Gtk.Template.Callback()
     def on_add_new_account_clicked(self, *_):
-        LoginDialog(first_login=False).present()
+        LoginDialog(skip_welcome_page=True).present()
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/views/sidebar/item.ui")

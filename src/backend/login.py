@@ -40,6 +40,11 @@ def generate_url_parameters(parameters: dict[str, str]) -> str:
 class OAuthLogin:
     # FIXME: PKCE flow always returns a HTTP 400
     _instances = {}
+    providers = []
+
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+        OAuthLogin.providers.append(cls)
 
     def __init__(
         self,
@@ -52,6 +57,7 @@ class OAuthLogin:
         self.refresh_oken = refresh_token
 
         self.callback = lambda _: None
+        self.access_denied_callback = lambda _: None
 
         self._state = str(id(self))
         OAuthLogin._instances[self._state] = self
@@ -85,13 +91,22 @@ class OAuthLogin:
         return f"{self._base_url}/oauth/token?{generate_url_parameters(parameters)}"
 
     @classmethod
-    def redirect(cls, code: str, state: str) -> None:
-        instance = cls._instances.get(state, None)
+    def redirect(cls, state: str, code: str) -> None:
+        instance = cls._instances.get(state)
         if instance is not None:
             instance.continue_auth_flow(code)
 
-    def start_auth_flow(self, callback: Callable[[Login], None]):
+    @classmethod
+    def access_denied(cls, state: str) -> None:
+        instance = cls._instances.get(state)
+        if instance is not None:
+            instance.access_denied_callback()
+
+    def start_auth_flow(
+        self, callback: Callable[[Login], None], access_denied_callback: Callable[[], None]
+    ):
         self.callback = callback
+        self.access_denied_callback = access_denied_callback
         url = self._construct_authorization_url()
         uri_launcher = Gtk.UriLauncher(uri=url)
         uri_launcher.launch(None, None, lambda d, r: d.launch_finish(r))
@@ -123,3 +138,5 @@ class OAuthLogin:
 class GitLabDotComOAuthLogin(OAuthLogin):
     _client_id = "69cf882b9dbec27f748a4fada7cf82d392b564025d340b69f3b868c5119a86cb"
     _base_url = "https://gitlab.com"
+    icon = "gitlab-fullcolor"
+    display_name = "GitLab.com"

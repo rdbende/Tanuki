@@ -30,7 +30,9 @@ class TanukiApplication(Adw.Application):
                 )
 
                 if "code" in uri_params and "state" in uri_params:
-                    OAuthLogin.redirect(uri_params.get("code"), uri_params.get("state"))
+                    OAuthLogin.redirect(uri_params.get("state"), uri_params.get("code"))
+                elif uri_params.get("error", "") == "access_denied":
+                    OAuthLogin.access_denied(uri_params.get("state"))
 
         self.do_activate()
 

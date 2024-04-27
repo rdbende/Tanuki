@@ -68,3 +68,8 @@
 .sidebar-item.needs-attention .badge {
   background-color: @accent_bg_color;
 }
+
+.oauth-provider-button {
+  -gtk-icon-size: 32px;
+  padding: 12px;
+}

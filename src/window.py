@@ -6,7 +6,7 @@
 
 from gi.repository import Adw, Gio, GObject, Gtk
 from tanuki.backend import session, settings
-from tanuki.dialogs.login import LoginDialog
+from tanuki.dialogs.account_setup import LoginDialog
 from tanuki.pages import UserPage
 from tanuki.views.sidebar import Sidebar, SidebarItem
 
@@ -52,7 +52,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def set_up_account(self):
         self.sidebar.account_chooser.popdown()
-        LoginDialog().present()
+        LoginDialog(skip_welcome_page=False).present()
 
     def setup_components(self):
         self.sidebar.menu_model = self.primary_menu
