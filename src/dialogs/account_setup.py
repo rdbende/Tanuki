@@ -54,7 +54,7 @@ class LoginDialog(Adw.Dialog):
         self.set_up_oauth_provider_buttons()
 
     def set_up_oauth_provider_buttons(self):
-        for provider in OAuthLogin.providers:
+        for provider in OAuthLogin.providers.values():
             button = Gtk.Button(icon_name=provider.icon, tooltip_text=provider.display_name)
             button.set_css_classes(["oauth-provider-button", "icon-button", "card"])
             button.connect("clicked", partial(self.add_oauth_account, provider))

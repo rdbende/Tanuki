@@ -36,7 +36,7 @@ class MainWindow(Adw.ApplicationWindow):
         if not current_session:
             self.set_up_account()
         else:
-            session.start_session(current_session)
+            session.start_session(current_session, refresh_oauth_token=True)
 
         settings.connect(
             "changed::current-session",

@@ -11,10 +11,11 @@ from typing import Callable
 
 import gitlab
 from gi.repository import Gio, GObject, Secret
-from tanuki.tools import async_job_finished, run_in_thread
+from tanuki.tools import async_job_finished, run_in_thread, threaded
 
 from .login import Login, OAuthLogin, PersonalAccessTokenLogin
 from .settings import settings
+from urllib.parse import urlparse
 
 schema = Secret.Schema.new(
     "io.github.rdbende.Tanuki",
@@ -56,13 +57,22 @@ class SessionManager:
         cls._sessions = json.loads(serialized_sessions)
 
     @classmethod
-    def save_secret(cls, session_id: str, url: str, secret: dict[str, str]) -> None:
+    def save_login(cls, session_id: str, login: Login) -> None:
+        if isinstance(login, OAuthLogin):
+            secret_data = {
+                "type": "oauth",
+                "access_token": login.access_token,
+                "refresh_token": login.refresh_token
+            }
+        else:
+            secret_data = {"type": "pat", "access_token": login.token}
+
         Secret.password_store(
             schema,
             {"session-id": session_id},
             Secret.COLLECTION_DEFAULT,
-            "some cool secret",
-            json.dumps(secret),
+            f"Login with {urlparse(login.url).netloc}",
+            json.dumps(secret_data),
             None,
             lambda _, task: Secret.password_store_finish(task),
         )
@@ -75,16 +85,14 @@ class SessionManager:
                 callback(None)
                 return
 
-            secret_data = json.loads(secret)
             account_info = SessionManager.get_session_from_id(session_id)
-            if secret_data["type"] == "oauth":
-                callback(
-                    OAuthLogin(
-                        account_info.url, secret_data["access_token"], secret_data["refresh_token"]
-                    )
-                )
+            data = json.loads(secret)
+            if data["type"] == "oauth":
+                login = OAuthLogin(account_info.url, data["access_token"], data["refresh_token"])
             else:
-                callback(PersonalAccessTokenLogin(account_info.url, secret_data["access_token"]))
+                login = PersonalAccessTokenLogin(account_info.url, data["access_token"])
+
+            callback(login)
 
         Secret.password_lookup(schema, {"session-id": session_id}, None, finish)
 
@@ -109,29 +117,20 @@ class SessionManager:
         settings.props.current_session = ""
 
     @classmethod
-    def create_session_if_not_exists(cls, account_data: AccountInfo, login: Login) -> str:
-        session_id = cls.get_session_id(account_data)
+    def create_session_if_not_exists(cls, account_info: AccountInfo, login: Login) -> str:
+        session_id = cls.get_session_id(account_info)
         sessions = cls.get_sessions()
 
         if session_id in sessions:
             return session_id
 
-        if isinstance(login, OAuthLogin):
-            secret_data = {
-                "type": "oauth",
-                "access_token": login.access_token,
-                "refresh_token": login.refresh_token,
-            }
-        else:
-            secret_data = {"type": "pat", "access_token": login.token}
-
-        cls.save_secret(session_id, login.url, secret_data)
+        cls.save_login(session_id, login)
 
         sessions[session_id] = {
-            "username": account_data.username,
-            "name": account_data.name,
-            "avatar_url": account_data.avatar_url,
-            "url": account_data.url,
+            "username": account_info.username,
+            "name": account_info.name,
+            "avatar_url": account_info.avatar_url,
+            "url": account_info.url,
         }
 
         serialized_sessions = json.dumps(sessions)
@@ -174,16 +173,19 @@ class Tanuki(GObject.Object):
         self.start_session(session_id, _fallback_login_if_keyring_is_slow=login)
 
     def start_session(
-        self, session_id: str, *, _fallback_login_if_keyring_is_slow: Login | None = None
+        self, session_id: str, *, refresh_oauth_token: bool = False, _fallback_login_if_keyring_is_slow: Login | None = None
     ) -> None:
         self.emit("login-started")
 
-        SessionManager.query_login(
-            session_id,
-            lambda login: run_in_thread(
-                self._manage_login_ui, login or _fallback_login_if_keyring_is_slow
-            ),
-        )
+        @threaded
+        def login_queried_callback(login: Login) -> None:
+            if refresh_oauth_token:
+                login.refresh_access_token()
+                SessionManager.save_login(session_id, login)
+
+            self._manage_login_ui(login or _fallback_login_if_keyring_is_slow)
+
+        SessionManager.query_login(session_id, login_queried_callback)
 
     def _manage_login_ui(self, login: Login) -> None:
         if self._validate_login(login) is not None:
@@ -200,7 +202,6 @@ class Tanuki(GObject.Object):
         return self._gitlab.users.get(self._gitlab.users.list(username=username)[0].id)
 
     def get_account_info(self):
-        assert self._gitlab is not None
         return AccountInfo(
             username=self._gitlab.user.username,
             name=self._gitlab.user.name,

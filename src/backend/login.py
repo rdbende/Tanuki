@@ -2,6 +2,7 @@
 #
 # SPDX-FileCopyrightText: 2024  Benedek Dévényi
 # SPDX-License-Identifier: GPL-3.0-or-later
+from __future__ import annotations
 
 import base64
 import hashlib
@@ -37,14 +38,24 @@ def generate_url_parameters(parameters: dict[str, str]) -> str:
     return "&".join([f"{key}={value}" for key, value in parameters.items()])
 
 
+# TODO: remove duct tape
 class OAuthLogin:
     # FIXME: PKCE flow always returns a HTTP 400
     _instances = {}
-    providers = []
+    providers = {}
 
     def __init_subclass__(cls):
         super().__init_subclass__()
-        OAuthLogin.providers.append(cls)
+        OAuthLogin.providers[cls._base_url] = cls
+
+    def __new__(
+        cls,
+        url: str | None = None,
+        access_token: str | None = None,
+        refresh_token: str | None = None
+    ) -> OAuthLogin:
+        klass = OAuthLogin.providers[url] if url else cls
+        return super(OAuthLogin, klass).__new__(klass)
 
     def __init__(
         self,
@@ -54,7 +65,7 @@ class OAuthLogin:
     ) -> None:
         self.url = url
         self.access_token = access_token
-        self.refresh_oken = refresh_token
+        self.refresh_token = refresh_token
 
         self.callback = lambda _: None
         self.access_denied_callback = lambda _: None
@@ -90,6 +101,17 @@ class OAuthLogin:
 
         return f"{self._base_url}/oauth/token?{generate_url_parameters(parameters)}"
 
+    def _construct_refresh_url(self, refresh_token: str):
+        parameters = {
+            "client_id": self._client_id,
+            "refresh_token": refresh_token,
+            "code_verifier": self._code_verifier,  # FIXME: why does this work?
+            "grant_type": "refresh_token",
+            "redirect_uri": GLib.Uri.escape_string("tanuki://callback", "/", True),
+        }
+
+        return f"{self._base_url}/oauth/token?{generate_url_parameters(parameters)}"
+
     @classmethod
     def redirect(cls, state: str, code: str) -> None:
         instance = cls._instances.get(state)
@@ -101,6 +123,18 @@ class OAuthLogin:
         instance = cls._instances.get(state)
         if instance is not None:
             instance.access_denied_callback()
+
+    def refresh_access_token(self):
+        url = self._construct_refresh_url(self.refresh_token)
+        response = requests.post(url)
+
+        if response.ok:
+            data = response.json()
+
+            self.access_token = data["access_token"]
+            self.refresh_token = data["refresh_token"]
+        else:
+            raise InvalidCredentialsError
 
     def start_auth_flow(
         self, callback: Callable[[Login], None], access_denied_callback: Callable[[], None]
