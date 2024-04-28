@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=tanuki
+Name=Tanuki
 Exec=io.github.rdbende.Tanuki %u
 Icon=io.github.rdbende.Tanuki
 Terminal=false
