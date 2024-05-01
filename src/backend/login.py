@@ -4,8 +4,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
-import base64
-import hashlib
 import random
 import string
 from dataclasses import dataclass
@@ -38,94 +36,119 @@ def generate_url_parameters(parameters: dict[str, str]) -> str:
     return "&".join([f"{key}={value}" for key, value in parameters.items()])
 
 
-# TODO: remove duct tape
+class OAuthLoginManager:
+    providers: dict[str, type[OAuthLogin]] = {}
+    _login_state: dict[str, tuple[type[OAuthLogin], Callable, Callable]] = {}
+
+    # FIXME: PKCE flow always returns a HTTP 400,
+    # although this code should work based on GitLab docs:
+    # code_verifier = "".join(random.choices(string.ascii_letters, k=64))
+    # code_sha256 = hashlib.sha256(code_verifier.encode()).digest()
+    # code_challenge = base64.urlsafe_b64encode(code_sha256).decode()
+
+    @classmethod
+    def get_login_class_from_url(cls, url: str) -> type[OAuthLogin] | None:
+        return cls.providers.get(url)
+
+    @classmethod
+    def redirect(cls, state: str, code: str) -> None:
+        login_class, *_ = cls._login_state[state]
+        cls.finish_auth_flow(requests.post, login_class._get_token_url(code), direct_args=(state,))
+
+    @classmethod
+    def access_denied(cls, state: str) -> None:
+        *_, access_denied_callback = cls._login_state[state]
+        access_denied_callback()
+
+    @classmethod
+    def start_auth_flow(
+        cls,
+        login_type: type[OAuthLogin],
+        callback: Callable[[Login], None],
+        access_denied_callback: Callable[[], None],
+    ) -> None:
+        state = "".join(random.choices(string.ascii_letters, k=16))
+        cls._login_state[state] = (login_type, callback, access_denied_callback)
+
+        url = login_type._get_authorization_url(state)
+        uri_launcher = Gtk.UriLauncher(uri=url)
+        uri_launcher.launch(None, None, lambda d, r: d.launch_finish(r))
+
+    @classmethod
+    @async_job_finished
+    def finish_auth_flow(cls, response: requests.Response, state: str) -> None | NoReturn:
+        if response.ok:
+            data = response.json()
+            access_token, refresh_token = data["access_token"], data["refresh_token"]
+        else:
+            raise InvalidCredentialsError
+
+        login_type, callback, _ = cls._login_state[state]
+        callback(login_type(access_token, refresh_token))
+
+
 class OAuthLogin:
-    # FIXME: PKCE flow always returns a HTTP 400
-    _instances = {}
-    providers = {}
+    _client_id: str
+    _base_url: str
+    icon: str
+    display_name: str
 
     def __init_subclass__(cls):
         super().__init_subclass__()
-        OAuthLogin.providers[cls._base_url] = cls
+        OAuthLoginManager.providers[cls._base_url] = cls
 
-    def __new__(
-        cls,
-        url: str | None = None,
-        access_token: str | None = None,
-        refresh_token: str | None = None
-    ) -> OAuthLogin:
-        klass = OAuthLogin.providers[url] if url else cls
-        return super(OAuthLogin, klass).__new__(klass)
-
-    def __init__(
-        self,
-        url: str | None = None,
-        access_token: str | None = None,
-        refresh_token: str | None = None,
-    ) -> None:
-        self.url = url
+    def __init__(self, access_token: str | None = None, refresh_token: str | None = None) -> None:
         self.access_token = access_token
         self.refresh_token = refresh_token
 
-        self.callback = lambda _: None
-        self.access_denied_callback = lambda _: None
+    @property
+    def gitlab_auth_kwargs(self) -> dict[str, str] | NoReturn:
+        if self.access_token:
+            return {"url": self._base_url, "oauth_token": self.access_token}
+        else:
+            raise InvalidCredentialsError
 
-        self._state = str(id(self))
-        OAuthLogin._instances[self._state] = self
+    @property
+    def url(self) -> str:
+        return self._base_url
 
-        self._code_verifier = "".join(random.choices(string.ascii_letters, k=64))
-        code_sha256 = hashlib.sha256(self._code_verifier.encode()).digest()
-        self._code_challenge = base64.urlsafe_b64encode(code_sha256).decode()
-
-    def _construct_authorization_url(self):
+    @classmethod
+    def _get_authorization_url(cls, state: str) -> str:
         parameters = {
-            "client_id": self._client_id,
-            # "code_challenge_method": "S256",
-            # "code_challenge": self._code_challenge,
+            "client_id": cls._client_id,
             "redirect_uri": GLib.Uri.escape_string("tanuki://callback", "/", True),
             "response_type": "code",
             "scope": "api",
-            "state": self._state,
+            "state": state,
         }
 
-        return f"{self._base_url}/oauth/authorize?{generate_url_parameters(parameters)}"
+        return f"{cls._base_url}/oauth/authorize?{generate_url_parameters(parameters)}"
 
-    def _construct_token_url(self, code: str):
+    @classmethod
+    def _get_token_url(cls, code: str) -> str:
         parameters = {
-            "client_id": self._client_id,
+            "client_id": cls._client_id,
             "code": code,
-            # "code_verifier": self._code_verifier,
             "grant_type": "authorization_code",
             "redirect_uri": GLib.Uri.escape_string("tanuki://callback", "/", True),
         }
 
-        return f"{self._base_url}/oauth/token?{generate_url_parameters(parameters)}"
+        return f"{cls._base_url}/oauth/token?{generate_url_parameters(parameters)}"
 
-    def _construct_refresh_url(self, refresh_token: str):
+    def _get_refresh_url(self):
+        verifier = "".join(random.choices(string.ascii_letters, k=64))
         parameters = {
             "client_id": self._client_id,
-            "refresh_token": refresh_token,
-            "code_verifier": self._code_verifier,  # FIXME: why does this work?
+            "refresh_token": self.refresh_token,
+            "code_verifier": verifier,  # FIXME: why does this work?
             "grant_type": "refresh_token",
             "redirect_uri": GLib.Uri.escape_string("tanuki://callback", "/", True),
         }
 
         return f"{self._base_url}/oauth/token?{generate_url_parameters(parameters)}"
 
-    @classmethod
-    def redirect(cls, state: str, code: str) -> None:
-        instance = cls._instances.get(state)
-        if instance is not None:
-            instance.continue_auth_flow(code)
-
-    @classmethod
-    def access_denied(cls, state: str) -> None:
-        instance = cls._instances.get(state)
-        if instance is not None:
-            instance.access_denied_callback()
-
-    def refresh_access_token(self):
-        url = self._construct_refresh_url(self.refresh_token)
+    def refresh_access_token(self) -> None | NoReturn:
+        url = self._get_refresh_url()
         response = requests.post(url)
 
         if response.ok:
@@ -133,38 +156,6 @@ class OAuthLogin:
 
             self.access_token = data["access_token"]
             self.refresh_token = data["refresh_token"]
-        else:
-            raise InvalidCredentialsError
-
-    def start_auth_flow(
-        self, callback: Callable[[Login], None], access_denied_callback: Callable[[], None]
-    ):
-        self.callback = callback
-        self.access_denied_callback = access_denied_callback
-        url = self._construct_authorization_url()
-        uri_launcher = Gtk.UriLauncher(uri=url)
-        uri_launcher.launch(None, None, lambda d, r: d.launch_finish(r))
-
-    def continue_auth_flow(self, code: str) -> None:
-        self.finish_auth_flow(requests.post, self._construct_token_url(code))
-
-    @async_job_finished
-    def finish_auth_flow(self, response) -> None | NoReturn:
-        if response.ok:
-            data = response.json()
-
-            self.url = self._base_url
-            self.access_token = data["access_token"]
-            self.refresh_token = data["refresh_token"]
-        else:
-            raise InvalidCredentialsError
-
-        self.callback(self)
-
-    @property
-    def gitlab_auth_kwargs(self) -> dict[str, str] | NoReturn:
-        if self.access_token:
-            return {"url": self.url, "oauth_token": self.access_token}
         else:
             raise InvalidCredentialsError
 

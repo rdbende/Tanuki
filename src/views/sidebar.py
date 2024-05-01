@@ -7,7 +7,6 @@ from typing import Callable
 
 from gi.repository import Adw, Gio, GObject, Gtk
 from tanuki.backend import SessionManager, session, settings
-from tanuki.dialogs.account_setup import LoginDialog
 from tanuki.tools import RemoteImage
 
 

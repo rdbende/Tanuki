@@ -4,19 +4,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from functools import partial, partialmethod
+from functools import partial
 from urllib.parse import urlparse
 
 from gi.repository import Adw, Gtk
 from tanuki.backend import (
-    GitLabDotComOAuthLogin,
     OAuthLogin,
+    OAuthLoginManager,
     PersonalAccessTokenLogin,
     SessionManager,
     session,
 )
 from tanuki.main import get_application
-from tanuki.tools import RemoteImages
 from tanuki.widgets import SpinnerButton
 
 
@@ -54,14 +53,16 @@ class LoginDialog(Adw.Dialog):
         self.set_up_oauth_provider_buttons()
 
     def set_up_oauth_provider_buttons(self):
-        for provider in OAuthLogin.providers.values():
+        for provider in OAuthLoginManager.providers.values():
             button = Gtk.Button(icon_name=provider.icon, tooltip_text=provider.display_name)
             button.set_css_classes(["oauth-provider-button", "icon-button", "card"])
             button.connect("clicked", partial(self.add_oauth_account, provider))
             self.oauth_providers_box.append(button)
 
     def add_oauth_account(self, provider: OAuthLogin, *_) -> bool:
-        provider().start_auth_flow(session.create_session, self.access_denied_callback)
+        OAuthLoginManager.start_auth_flow(
+            provider, session.create_session, self.access_denied_callback
+        )
         self.navigation_view.push_by_tag("confirm_oauth")
 
     def add_pat_account(self, url: str, token: str) -> bool:

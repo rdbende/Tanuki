@@ -7,7 +7,6 @@
 from gi.repository import Adw, GObject, Gtk
 from gitlab.base import RESTObject
 from tanuki.backend import session
-from tanuki.main import get_main_window
 from tanuki.tools import RemoteImage, async_job_finished
 
 

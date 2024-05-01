@@ -8,14 +8,14 @@ import hashlib
 import json
 from collections import namedtuple
 from typing import Callable
+from urllib.parse import urlparse
 
 import gitlab
 from gi.repository import Gio, GObject, Secret
-from tanuki.tools import async_job_finished, run_in_thread, threaded
+from tanuki.tools import async_job_finished, threaded
 
-from .login import Login, OAuthLogin, PersonalAccessTokenLogin
+from .login import Login, OAuthLogin, OAuthLoginManager, PersonalAccessTokenLogin
 from .settings import settings
-from urllib.parse import urlparse
 
 schema = Secret.Schema.new(
     "io.github.rdbende.Tanuki",
@@ -62,7 +62,7 @@ class SessionManager:
             secret_data = {
                 "type": "oauth",
                 "access_token": login.access_token,
-                "refresh_token": login.refresh_token
+                "refresh_token": login.refresh_token,
             }
         else:
             secret_data = {"type": "pat", "access_token": login.token}
@@ -88,7 +88,8 @@ class SessionManager:
             account_info = SessionManager.get_session_from_id(session_id)
             data = json.loads(secret)
             if data["type"] == "oauth":
-                login = OAuthLogin(account_info.url, data["access_token"], data["refresh_token"])
+                login_class = OAuthLoginManager.get_login_class_from_url(account_info.url)
+                login = login_class(data["access_token"], data["refresh_token"])
             else:
                 login = PersonalAccessTokenLogin(account_info.url, data["access_token"])
 
@@ -173,13 +174,17 @@ class Tanuki(GObject.Object):
         self.start_session(session_id, _fallback_login_if_keyring_is_slow=login)
 
     def start_session(
-        self, session_id: str, *, refresh_oauth_token: bool = False, _fallback_login_if_keyring_is_slow: Login | None = None
+        self,
+        session_id: str,
+        *,
+        refresh_oauth_token: bool = False,
+        _fallback_login_if_keyring_is_slow: Login | None = None,
     ) -> None:
         self.emit("login-started")
 
         @threaded
         def login_queried_callback(login: Login) -> None:
-            if refresh_oauth_token:
+            if refresh_oauth_token and isinstance(login, OAuthLogin):
                 login.refresh_access_token()
                 SessionManager.save_login(session_id, login)
 

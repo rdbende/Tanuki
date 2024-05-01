@@ -49,8 +49,10 @@ class AsyncWorker(GObject.Object):
 
 def async_job_finished(func: Callable):
     def wrapper(self, op: Callable, *args, **kwargs):
+        direct_args = kwargs.pop("direct_args", ())
+
         def cb(w, r, _):
-            func(self, w.finish(r))
+            func(self, w.finish(r), *direct_args)
 
         AsyncWorker(*args, operation=op, callback=cb, **kwargs).start()
 

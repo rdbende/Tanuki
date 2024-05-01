@@ -7,7 +7,7 @@ from __future__ import annotations
 import sys
 
 from gi.repository import Adw, Gio, GLib
-from tanuki.backend import OAuthLogin
+from tanuki.backend import OAuthLoginManager
 
 
 class TanukiApplication(Adw.Application):
@@ -33,9 +33,9 @@ class TanukiApplication(Adw.Application):
                 )
 
                 if "code" in uri_params and "state" in uri_params:
-                    OAuthLogin.redirect(uri_params.get("state"), uri_params.get("code"))
+                    OAuthLoginManager.redirect(uri_params.get("state"), uri_params.get("code"))
                 elif uri_params.get("error", "") == "access_denied":
-                    OAuthLogin.access_denied(uri_params.get("state"))
+                    OAuthLoginManager.access_denied(uri_params.get("state"))
 
         self.do_activate()
 
