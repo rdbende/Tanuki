@@ -17,6 +17,8 @@ from tanuki.tools import async_job_finished, threaded
 from .login import Login, OAuthLogin, OAuthLoginManager, PersonalAccessTokenLogin
 from .settings import settings
 
+from functools import cache
+
 schema = Secret.Schema.new(
     "io.github.rdbende.Tanuki",
     Secret.SchemaFlags.NONE,
@@ -203,8 +205,17 @@ class Tanuki(GObject.Object):
         self._gitlab = None
         SessionManager.delete_session(session_id)
 
+    @cache
+    def get_user_id(self, username: str) -> int:
+        return self._gitlab.users.list(username=username)[0].id
+
+    @cache
     def get_user(self, username: str):
-        return self._gitlab.users.get(self._gitlab.users.list(username=username)[0].id)
+        return self._gitlab.users.get(self.get_user_id(username))
+
+    @cache
+    def get_projects_of_user(self, username: str):
+        return self._gitlab.users.get(self.get_user_id(username)).projects.list(iterator=True)
 
     def get_account_info(self):
         return AccountInfo(

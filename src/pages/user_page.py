@@ -23,6 +23,7 @@ class UserPage(Adw.Bin):
     def __init__(self, username: str):
         super().__init__()
         self.set_user_data(session.get_user, username)
+        self.set_user_projects(session.get_projects_of_user, username)
 
         self.remote_image = RemoteImage(self, "avatar-url")
         self.remote_image.bind_to(self.status_page, "paintable")
@@ -32,3 +33,7 @@ class UserPage(Adw.Bin):
         self.avatar_url = model.avatar_url
         self.username = model.name
         self.bio = model.bio
+
+    @async_job_finished
+    def set_user_projects(self, model: RESTObject) -> None:
+        print(model)

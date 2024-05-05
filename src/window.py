@@ -6,7 +6,7 @@
 
 from gi.repository import Adw, Gio, GLib, GObject, Gtk
 from tanuki.backend import session, settings
-from tanuki.pages import UserPage
+from tanuki.pages import UserPage, PageManager
 from tanuki.views.sidebar import Sidebar, SidebarItem
 
 
@@ -53,18 +53,10 @@ class MainWindow(Adw.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def user_own_profile(self, *_):
-        self.add_page(UserPage(session.get_account_info().username))
+        PageManager.add_page(UserPage(session.get_account_info().username))
 
     def set_up_account(self, *_) -> None:
         self.get_application().activate_action("add_new_account", GLib.Variant.new_boolean(True))
-
-    def add_page(self, page: Adw.Bin) -> None:
-        nav_page = Adw.NavigationPage(title="Page")
-        toolbar_view = Adw.ToolbarView()
-        toolbar_view.set_content(page)
-        toolbar_view.add_top_bar(Adw.HeaderBar())
-        nav_page.set_child(toolbar_view)
-        self.navigation_view.push(nav_page)
 
     def setup_components(self):
         self.sidebar.menu_model = self.primary_menu
