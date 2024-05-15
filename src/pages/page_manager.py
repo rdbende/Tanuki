@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from gi.repository import Adw, Gio, GLib, GObject, Gtk
+from gi.repository import Adw, GObject
 from tanuki.main import get_main_window
 
 
@@ -20,5 +20,4 @@ class PageManager(GObject.Object):
         nav_page.set_child(toolbar_view)
         get_main_window().navigation_view.push(nav_page)
 
-    def go_back_home():
-        ...
+    def go_back_home(): ...

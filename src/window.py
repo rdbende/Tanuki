@@ -6,7 +6,7 @@
 
 from gi.repository import Adw, Gio, GLib, GObject, Gtk
 from tanuki.backend import session, settings
-from tanuki.pages import UserPage, PageManager
+from tanuki.pages import PageManager, UserPage
 from tanuki.views.sidebar import Sidebar, SidebarItem
 
 

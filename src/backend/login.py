@@ -11,7 +11,7 @@ from typing import Callable, NoReturn, Protocol
 
 import requests
 from gi.repository import GLib, Gtk
-from tanuki.tools import async_job_finished
+from tanuki.architecture import async_job_finished
 
 
 class InvalidCredentialsError(Exception): ...

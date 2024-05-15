@@ -6,8 +6,8 @@
 
 from gi.repository import Adw, GObject, Gtk
 from gitlab.base import RESTObject
+from tanuki.architecture import RemoteImage, async_job_finished
 from tanuki.backend import session
-from tanuki.tools import RemoteImage, async_job_finished
 
 
 @Gtk.Template(resource_path="/io/github/rdbende/Tanuki/pages/user.ui")

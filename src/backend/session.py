@@ -7,17 +7,16 @@
 import hashlib
 import json
 from collections import namedtuple
+from functools import cache
 from typing import Callable
 from urllib.parse import urlparse
 
 import gitlab
 from gi.repository import Gio, GObject, Secret
-from tanuki.tools import async_job_finished, threaded
+from tanuki.architecture import async_job_finished, threaded
 
 from .login import Login, OAuthLogin, OAuthLoginManager, PersonalAccessTokenLogin
 from .settings import settings
-
-from functools import cache
 
 schema = Secret.Schema.new(
     "io.github.rdbende.Tanuki",

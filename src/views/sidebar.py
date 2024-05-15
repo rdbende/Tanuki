@@ -6,8 +6,8 @@
 from typing import Callable
 
 from gi.repository import Adw, Gio, GObject, Gtk
+from tanuki.architecture import RemoteImage
 from tanuki.backend import SessionManager, session, settings
-from tanuki.tools import RemoteImage
 
 
 class AvatarButton(Adw.Bin):
