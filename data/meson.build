@@ -3,8 +3,9 @@ subdir('ui')
 
 gnome = import('gnome')
 
-gnome.compile_resources('tanuki',
-  'io.github.rdbende.Tanuki.gresource.xml',
+gnome.compile_resources(
+  meson.project_name(),
+  meson.project_name() + '.gresource.xml',
   gresource_bundle: true,
   dependencies: blueprints,
   install: true,
@@ -12,8 +13,8 @@ gnome.compile_resources('tanuki',
 )
 
 desktop_file = i18n.merge_file(
-        input: 'io.github.rdbende.Tanuki.desktop.in',
-       output: 'io.github.rdbende.Tanuki.desktop',
+        input: meson.project_name() + '.desktop.in',
+       output: meson.project_name() + '.desktop',
          type: 'desktop',
        po_dir: '../po',
       install: true,
@@ -26,8 +27,8 @@ if desktop_utils.found()
 endif
 
 appstream_file = i18n.merge_file(
-        input: 'io.github.rdbende.Tanuki.metainfo.xml.in',
-       output: 'io.github.rdbende.Tanuki.metainfo.xml',
+        input: meson.project_name() + '.metainfo.xml.in',
+       output: meson.project_name() + '.metainfo.xml',
        po_dir: '../po',
       install: true,
   install_dir: get_option('datadir') / 'metainfo'
@@ -37,7 +38,7 @@ appstreamcli = find_program('appstreamcli', required: false, disabler: true)
 test('Validate appstream file', appstreamcli,
      args: ['validate', '--no-net', '--explain', appstream_file])
 
-install_data('io.github.rdbende.Tanuki.gschema.xml',
+install_data(meson.project_name() + '.gschema.xml',
   install_dir: get_option('datadir') / 'glib-2.0' / 'schemas'
 )
 

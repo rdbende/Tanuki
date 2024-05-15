@@ -7,6 +7,7 @@ from __future__ import annotations
 import sys
 
 from gi.repository import Adw, Gio, GLib
+from tanuki import APP_ID, APP_ICON
 from tanuki.backend import OAuthLoginManager
 
 
@@ -14,9 +15,7 @@ class TanukiApplication(Adw.Application):
     """The main application singleton class."""
 
     def __init__(self):
-        super().__init__(
-            application_id="io.github.rdbende.Tanuki", flags=Gio.ApplicationFlags.HANDLES_OPEN
-        )
+        super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.HANDLES_OPEN)
         self.create_action("quit", lambda *_: self.quit(), ["<primary>q"])
         self.create_action(
             "add_new_account", self.on_add_new_account, parameter_type=GLib.VariantType("b")
@@ -58,7 +57,7 @@ class TanukiApplication(Adw.Application):
         """Callback for the app.about action."""
         about = Adw.AboutDialog(
             application_name="Tanuki",
-            application_icon="io.github.rdbende.Tanuki",
+            application_icon=APP_ICON,
             developer_name="Benedek Dévényi",
             version="0.1.0",
             developers=["Benedek Dévényi"],
@@ -102,7 +101,7 @@ def get_main_window() -> MainWindow | None:
     return app.get_active_window()
 
 
-def main(version):
+def main():
     """The application's entry point."""
     global app
     app = TanukiApplication()

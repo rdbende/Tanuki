@@ -1,4 +1,4 @@
-project('tanuki',
+project('io.github.rdbende.Tanuki',
           version: '0.1.0',
     meson_version: '>= 0.62.0',
   default_options: [ 'warning_level=2', 'werror=false', ],
@@ -20,8 +20,10 @@ moduledir = python_dir / 'tanuki'
 conf = configuration_data()
 conf.set('PYTHON', py_installation.full_path())
 conf.set('VERSION', meson.project_version())
-conf.set('localedir', localedir)
-conf.set('pkgdatadir', pkgdatadir)
+conf.set('APP-ID', meson.project_name())
+conf.set('APP-ICON', meson.project_name())
+conf.set('LOCALEDIR', localedir)
+conf.set('PKGDATADIR', pkgdatadir)
 
 
 subdir('data')
@@ -41,6 +43,14 @@ configure_file(
   install: true,
   install_dir: bindir,
   install_mode: 'r-xr-xr-x'
+)
+
+configure_file(
+  input: 'src/__init__.py',
+  output: '__init__.py',
+  configuration: conf,
+  install: true,
+  install_dir: moduledir,
 )
 
 
